@@ -7,22 +7,12 @@
       "RelativeMoniker": "D:0:0:{A3C56C4A-57FC-48A4-A45A-DA12304D06A9}|Recorder.csproj|solutionrelative:gui\\mainform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{A3C56C4A-57FC-48A4-A45A-DA12304D06A9}|Recorder.csproj|C:\\Users\\youss\\OneDrive\\Desktop\\speaker-identification-system\\src\\gui\\mainform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
-      "RelativeMoniker": "D:0:0:{A3C56C4A-57FC-48A4-A45A-DA12304D06A9}|Recorder.csproj|solutionrelative:gui\\mainform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{A3C56C4A-57FC-48A4-A45A-DA12304D06A9}|Recorder.csproj|C:\\Users\\youss\\OneDrive\\Desktop\\speaker-identification-system\\src\\gui\\mainform.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{A3C56C4A-57FC-48A4-A45A-DA12304D06A9}|Recorder.csproj|solutionrelative:gui\\mainform.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{7A703CAF-2FFC-4FCD-9E2C-0D8B58164620}|Solution Items{7A703CAF-2FFC-4FCD-9E2C-0D8B58164620}|C:\\Users\\youss\\OneDrive\\Desktop\\speaker-identification-system\\src\\DataBase\\voice_enrollment.db||{25834150-CD7E-11D0-92DF-00A0C9138C45}",
-      "RelativeMoniker": "D:0:0:{7A703CAF-2FFC-4FCD-9E2C-0D8B58164620}|Solution Items{7A703CAF-2FFC-4FCD-9E2C-0D8B58164620}|solutionrelative:DataBase\\voice_enrollment.db||{25834150-CD7E-11D0-92DF-00A0C9138C45}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{00000000-0000-0000-0000-000000000000}|\u003CSolution\u003E|Recorder||{04B8AB82-A572-4FEF-95CE-5222444B6B64}|"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A3C56C4A-57FC-48A4-A45A-DA12304D06A9}|Recorder.csproj|c:\\users\\youss\\onedrive\\desktop\\speaker-identification-system\\src\\||{B270807C-D8C6-49EB-8EBE-8E8D566637A1}|5e9a8ac2-4f34-4521-858f-4c248ba31532"
+      "AbsoluteMoniker": "D:0:0:{A3C56C4A-57FC-48A4-A45A-DA12304D06A9}|Recorder.csproj|C:\\Users\\youss\\OneDrive\\Desktop\\speaker-identification-system\\src\\gui\\mainform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{A3C56C4A-57FC-48A4-A45A-DA12304D06A9}|Recorder.csproj|solutionrelative:gui\\mainform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
     }
   ],
   "DocumentGroupContainers": [
@@ -32,34 +22,11 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 3,
+          "SelectedChildIndex": 1,
           "Children": [
             {
               "$type": "Bookmark",
               "Name": "ST:128:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "voice_enrollment.db",
-              "DocumentMoniker": "C:\\Users\\youss\\OneDrive\\Desktop\\speaker-identification-system\\src\\DataBase\\voice_enrollment.db",
-              "RelativeDocumentMoniker": "DataBase\\voice_enrollment.db",
-              "ToolTip": "C:\\Users\\youss\\OneDrive\\Desktop\\speaker-identification-system\\src\\DataBase\\voice_enrollment.db",
-              "RelativeToolTip": "DataBase\\voice_enrollment.db",
-              "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKYSURBVDhPrVTPT1NBEP6UlpY0VEEwyEFFDAKmxJBQgjYW1NDgDYuHBg96FCX4H2j8B7SVmHBS\u002BzPGVk2IRqvGIgkBEw9iNGpMqh5KDDU2NlAOvPfcnbfbljbUC9/LvJ2dnfl2dnbew5ZC07RtQiWEQiFm0qAy0VQmmsp99LmwqcJmNpuxurJ6YWzs4l0RXo5gMKillpY0RVFI1qWsC2F6NpvVwuGwlkwmtUAgqN2anDwvwgnbxUjgmbDtoagqFIWLkhdGRiPPjsNiscDhOAar1XrH6/MdISPDBkJ\u002BJF3RB0KxXgS/349YLIZMJsNz2CnMJYSsPhKsYkIrcPLsqqtNGD7jxqXL45iYuAJV1FqihFAUX1AszC/A5/Pi7cI8zTdC9\u002BH\u002BVCqBshrSEnvd8wdg3d2E02c9MDU04fbUFNnzoUKhBGSpGMoy5I6Li4s4etyJ9gP78H7uDWyt\u002B9F30kV24Zknlm0kUXYp/EkkXsNSU4OH0Sg8Hg8ex6LYUVuLxExCOOoDB2W4GSHfjTs7\u002B/uRy\u002BXgHhlBJBLBsHsEudUVNDbvxYOnL/Bqdg5ra2sUI5tdovzIjLHL1oW52Rl8\u002B/4TPQ4nPid/4Mn0NKo6nBgcdGG5/hDeffhIp6EMK9VQpwRGR88hvZTCo/th/P2VQktrG1xtu/AymcVQeyNSy38oRn6WEuU1LKzB3mvHOOu3Hnsv9jTUIf71N0611OLZlzS6bR3kw3uwYttQfmJXPpWu3bZO1KU/If48jsPGDJob6smuJ7EJIXV8EUkxzCYTBhx9cA\u002BdQOfBFvrbcOhH/s\u002Bl5EHOQoSpFLRW6VL4msFQpYvRAGMFKcQUCDf8YG/c9LJ1PSP5BcgayaPxua5L4X4YuH7tquj6LQXwD5irxgtnc/UBAAAAAElFTkSuQmCC",
-              "WhenOpened": "2025-05-03T16:21:57.007Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "Recorder",
-              "DocumentMoniker": "C:\\Users\\youss\\OneDrive\\Desktop\\speaker-identification-system\\src\\Recorder.csproj",
-              "RelativeDocumentMoniker": "Recorder.csproj",
-              "ToolTip": "C:\\Users\\youss\\OneDrive\\Desktop\\speaker-identification-system\\src\\Recorder.csproj",
-              "RelativeToolTip": "Recorder.csproj",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
-              "WhenOpened": "2025-05-03T16:20:10.983Z",
-              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -69,27 +36,27 @@
               "RelativeDocumentMoniker": "GUI\\MainForm.cs",
               "ToolTip": "C:\\Users\\youss\\OneDrive\\Desktop\\speaker-identification-system\\src\\GUI\\MainForm.cs*",
               "RelativeToolTip": "GUI\\MainForm.cs*",
-              "ViewState": "AgIAABUAAAAAAAAAAAAAACoAAAAiAAAAAAAAAA==",
+              "ViewState": "AgIAAB0AAAAAAAAAAAAAwC8AAAAMAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-05-03T15:05:44.066Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 1,
               "Title": "MainForm.Designer.cs",
               "DocumentMoniker": "C:\\Users\\youss\\OneDrive\\Desktop\\speaker-identification-system\\src\\GUI\\MainForm.Designer.cs",
               "RelativeDocumentMoniker": "GUI\\MainForm.Designer.cs",
               "ToolTip": "C:\\Users\\youss\\OneDrive\\Desktop\\speaker-identification-system\\src\\GUI\\MainForm.Designer.cs",
               "RelativeToolTip": "GUI\\MainForm.Designer.cs",
-              "ViewState": "AgIAAC0BAAAAAAAAAAAowDsBAAA6AAAAAAAAAA==",
+              "ViewState": "AgIAACoBAAAAAAAAAAAowDsBAAA6AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-05-03T14:36:17.323Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
               "Title": "MainForm.cs [Design]",
               "DocumentMoniker": "C:\\Users\\youss\\OneDrive\\Desktop\\speaker-identification-system\\src\\GUI\\MainForm.cs",
               "RelativeDocumentMoniker": "GUI\\MainForm.cs",

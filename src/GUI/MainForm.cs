@@ -9,6 +9,7 @@ using Accord.Audio.Filters;
 using Recorder.Recorder;
 using Recorder.MFCC;
 using System.Data.SQLite;
+
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace Recorder
@@ -34,15 +35,21 @@ namespace Recorder
         private Decoder decoder;
 
         private bool isRecorded;
-        // string dbPath = "Data Source=voice_enrollments.db;Version=3;";
+        private bool isSaved;
         private string dbPath;
-          // Correct full path to your .db file
-        
-        string filePath="";
+
+      
+
         public MainForm()
         {
             InitializeComponent();
-            dbPath = @"C:\Users\youss\OneDrive\Desktop\speaker-identification-system\src\DataBase\voice_enrollment.db";
+
+            //Your project solution path////////////////
+            string projectPath = @"C:\Users\youss\OneDrive\Desktop\speaker-identification-system\src";
+
+            dbPath = Path.Combine(projectPath, "DataBase", "voice_enrollment.db");
+
+
             // Configure the wavechart
             chart.SimpleMode = true;
             chart.AddWaveform("wave", Color.Green, 1, false);
@@ -260,7 +267,7 @@ namespace Recorder
 
         private void saveFileDialog1_FileOk(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            filePath = saveFileDialog1.FileName;
+            path = saveFileDialog1.FileName;
             if (this.encoder != null)
             {
                 Stream fileStream = saveFileDialog1.OpenFile();
@@ -271,6 +278,7 @@ namespace Recorder
         private void saveToolStripMenuItem_Click(object sender, EventArgs e)
         {
             saveFileDialog1.ShowDialog(this);
+            isSaved = true;
         }
 
         private void updateTimer_Tick(object sender, EventArgs e)
@@ -289,6 +297,8 @@ namespace Recorder
             {
                 isRecorded = false;
                 path = open.FileName;
+               
+                
                 //Open the selected audio file
                 signal = AudioOperations.OpenAudioFile(path);
                 signal = AudioOperations.RemoveSilence(signal);
@@ -303,7 +313,7 @@ namespace Recorder
                     }
                 }
                 updateButtons();
-
+                isSaved = true;
             }
         }
 
@@ -316,28 +326,67 @@ namespace Recorder
         private void btnAdd_Click(object sender, EventArgs e)
         {
             //Add to Data Base Here/////////////////
-            if ((this.encoder != null || this.decoder != null) && !string.IsNullOrWhiteSpace(Name_box.Text)) {
+            if ((this.encoder != null || this.decoder != null) && !string.IsNullOrWhiteSpace(Name_box.Text) && isSaved) {
                 string connectionString = $"Data Source={dbPath};Version=3;";
                 using (var conn = new SQLiteConnection(connectionString))
                 {
                     conn.Open();
 
-                    string sql = "INSERT INTO voice_enrollments (user_name, voice_path) VALUES (@name, @path)";
-                    using (var cmd = new SQLiteCommand(sql, conn))
+                    // Check if name already exists
+                    string checkSql = "SELECT COUNT(*) FROM voice_enrollments WHERE user_name = @name";
+                    using (var checkCmd = new SQLiteCommand(checkSql, conn))
                     {
-                        cmd.Parameters.AddWithValue("@name", Name_box.Text);
-                        cmd.Parameters.AddWithValue("@path", filePath);
-                        cmd.ExecuteNonQuery();
+                        checkCmd.Parameters.AddWithValue("@name", Name_box.Text);
+                        long count = (long)checkCmd.ExecuteScalar();
+
+                        if (count > 0)
+                        {
+                            MessageBox.Show("This name is already used. Please choose another.");
+                            return;
+                        }
                     }
 
-                    conn.Close();
+                    // If name doesn't exist, insert new record
+                    signal = AudioOperations.OpenAudioFile(path);
+                    signal = AudioOperations.RemoveSilence(signal);
+                    seq = AudioOperations.ExtractFeatures(signal);
+
+                    // Serialize features
+                    double[][] features = new double[seq.Frames.Length][];
+                    for (int i = 0; i < seq.Frames.Length; i++)
+                        features[i] = seq.Frames[i].Features;
+
+                    string templateString = "";
+
+                    for (int i = 0; i < features.Length; i++)
+                    {
+                        string frame = string.Join(",", features[i]);
+                        templateString += frame + ";"; 
+                    }
+
+                    // Add to DB with template
+                    string insertSql = "INSERT INTO voice_enrollments (user_name, voice_path, template_seq) VALUES (@name, @path, @template)";
+                    using (var insertCmd = new SQLiteCommand(insertSql, conn))
+                    {
+                        insertCmd.Parameters.AddWithValue("@name", Name_box.Text);
+                        insertCmd.Parameters.AddWithValue("@path", path);
+                        insertCmd.Parameters.AddWithValue("@template", templateString);
+                        insertCmd.ExecuteNonQuery();
+                    }
+
+                    btnAdd.Enabled = false;
+                    Name_box.Text = null;
                 }
+            }
+            else if (!isSaved)
+            {
+                MessageBox.Show("Please Save the Record First!");
             }
             else
             {
                 MessageBox.Show("Please Fill the requirements!");
             }
-
+           
 
         }
 
