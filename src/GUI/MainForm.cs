@@ -8,6 +8,8 @@ using Accord.DirectSound;
 using Accord.Audio.Filters;
 using Recorder.Recorder;
 using Recorder.MFCC;
+using System.Data.SQLite;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace Recorder
 {
@@ -32,11 +34,15 @@ namespace Recorder
         private Decoder decoder;
 
         private bool isRecorded;
-
+        // string dbPath = "Data Source=voice_enrollments.db;Version=3;";
+        private string dbPath;
+          // Correct full path to your .db file
+        
+        string filePath="";
         public MainForm()
         {
             InitializeComponent();
-
+            dbPath = @"C:\Users\youss\OneDrive\Desktop\speaker-identification-system\src\DataBase\voice_enrollment.db";
             // Configure the wavechart
             chart.SimpleMode = true;
             chart.AddWaveform("wave", Color.Green, 1, false);
@@ -254,6 +260,7 @@ namespace Recorder
 
         private void saveFileDialog1_FileOk(object sender, System.ComponentModel.CancelEventArgs e)
         {
+            filePath = saveFileDialog1.FileName;
             if (this.encoder != null)
             {
                 Stream fileStream = saveFileDialog1.OpenFile();
@@ -308,6 +315,29 @@ namespace Recorder
 
         private void btnAdd_Click(object sender, EventArgs e)
         {
+            //Add to Data Base Here/////////////////
+            if ((this.encoder != null || this.decoder != null) && !string.IsNullOrWhiteSpace(Name_box.Text)) {
+                string connectionString = $"Data Source={dbPath};Version=3;";
+                using (var conn = new SQLiteConnection(connectionString))
+                {
+                    conn.Open();
+
+                    string sql = "INSERT INTO voice_enrollments (user_name, voice_path) VALUES (@name, @path)";
+                    using (var cmd = new SQLiteCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@name", Name_box.Text);
+                        cmd.Parameters.AddWithValue("@path", filePath);
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    conn.Close();
+                }
+            }
+            else
+            {
+                MessageBox.Show("Please Fill the requirements!");
+            }
+
 
         }
 
@@ -319,9 +349,14 @@ namespace Recorder
             var hobba = TestcaseLoader.LoadTestcase2Training(fileDialog.FileName);
         }
 
+        private void btnIdentify_Click(object sender, EventArgs e)
+        {
 
-        
+        }
 
+        private void chart_Click(object sender, EventArgs e)
+        {
 
-     }
+        }
+    }
 }
