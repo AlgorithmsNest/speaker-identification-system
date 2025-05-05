@@ -125,6 +125,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="GUI\Form2.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GUI\Form2.Designer.cs">
+      <DependentUpon>Form2.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\Form1.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GUI\Form1.Designer.cs">
+      <DependentUpon>Form1.cs</DependentUpon>
+    </Compile>
     <Compile Include="MainFuctions\AudioOperations.cs" />
     <Compile Include="GUI\MainForm.cs">
       <SubType>Form</SubType>
@@ -139,6 +151,12 @@
     <Compile Include="Recorder\Decoder.cs" />
     <Compile Include="Recorder\Encoder.cs" />
     <Compile Include="TestcaseLoader.cs" />
+    <EmbeddedResource Include="GUI\Form1.resx">
+      <DependentUpon>Form1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\Form2.resx">
+      <DependentUpon>Form2.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="GUI\MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>

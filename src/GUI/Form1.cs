@@ -8,27 +8,16 @@ using Accord.DirectSound;
 using Accord.Audio.Filters;
 using Recorder.Recorder;
 using Recorder.MFCC;
-using System.Data.SQLite;
 
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace Recorder
 {
-    /// <summary>
-    ///   Speaker Identification application.
-    /// </summary>
-    /// 
-    public partial class MainForm : Form
+    public partial class Form1 : Form
     {
-        /// <summary>
-        /// Data of the opened audio file, contains:
-        ///     1. signal data
-        ///     2. sample rate
-        ///     3. signal length in ms
-        /// </summary>
         private AudioSignal signal = null;
         Sequence seq = null;
-       
+
         private string path;
 
         private Encoder encoder;
@@ -36,31 +25,15 @@ namespace Recorder
 
         private bool isRecorded;
         private bool isSaved;
-        private string dbPath;
-
-      
-
-        public MainForm()
+        public Form1()
         {
             InitializeComponent();
-
-            //Your project solution path////////////////
-            string projectPath = @"C:\Users\youss\OneDrive\Desktop\speaker-identification-system\src";
-
-            dbPath = Path.Combine(projectPath, "DataBase", "voice_enrollment.db");
-
-
-            // Configure the wavechart
+            Name_box.ReadOnly = true;
             chart.SimpleMode = true;
             chart.AddWaveform("wave", Color.Green, 1, false);
             updateButtons();
         }
 
-
-        /// <summary>
-        ///   Starts recording audio from the sound card
-        /// </summary>
-        /// 
         private void btnRecord_Click(object sender, EventArgs e)
         {
             isRecorded = true;
@@ -105,7 +78,7 @@ namespace Recorder
         /// 
         private void btnStop_Click(object sender, EventArgs e)
         {
-            Stop();   
+            Stop();
             updateButtons();
             updateWaveform(new float[BaseRecorder.FRAME_SIZE], BaseRecorder.FRAME_SIZE);
         }
@@ -131,7 +104,7 @@ namespace Recorder
         {
             this.encoder.addNewFrame(eventArgs.Signal);
             updateWaveform(this.encoder.current, eventArgs.Signal.Length);
-       }
+        }
 
 
         /// <summary>
@@ -265,22 +238,6 @@ namespace Recorder
             Stop();
         }
 
-        private void saveFileDialog1_FileOk(object sender, System.ComponentModel.CancelEventArgs e)
-        {
-            path = saveFileDialog1.FileName;
-            if (this.encoder != null)
-            {
-                Stream fileStream = saveFileDialog1.OpenFile();
-                this.encoder.Save(fileStream);
-            }
-        }
-
-        private void saveToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            saveFileDialog1.ShowDialog(this);
-            isSaved = true;
-        }
-
         private void updateTimer_Tick(object sender, EventArgs e)
         {
             if (this.encoder != null) { lbLength.Text = String.Format("Length: {0:00.00} sec.", this.encoder.duration / 1000.0); }
@@ -297,13 +254,13 @@ namespace Recorder
             {
                 isRecorded = false;
                 path = open.FileName;
-               
-                
+
+
                 //Open the selected audio file
 
                 signal = AudioOperations.OpenAudioFile(path);
                 signal = AudioOperations.RemoveSilence(signal);
-                 seq = AudioOperations.ExtractFeatures(signal);
+                seq = AudioOperations.ExtractFeatures(signal);
                 for (int i = 0; i < seq.Frames.Length; i++)
                 {
                     for (int j = 0; j < 13; j++)
@@ -326,85 +283,9 @@ namespace Recorder
 
         private void btnAdd_Click(object sender, EventArgs e)
         {
-            //Add to Data Base Here/////////////////
-            if ((this.encoder != null || this.decoder != null) && !string.IsNullOrWhiteSpace(Name_box.Text) && isSaved) {
-                string connectionString = $"Data Source={dbPath};Version=3;";
-                using (var conn = new SQLiteConnection(connectionString))
-                {
-                    conn.Open();
+            //Write code here
 
-                    // Check if name already exists
-                    string checkSql = "SELECT COUNT(*) FROM voice_enrollments WHERE user_name = @name";
-                    using (var checkCmd = new SQLiteCommand(checkSql, conn))
-                    {
-                        checkCmd.Parameters.AddWithValue("@name", Name_box.Text);
-                        long count = (long)checkCmd.ExecuteScalar();
 
-                        if (count > 0)
-                        {
-                            MessageBox.Show("This name is already used. Please choose another.");
-                            return;
-                        }
-                    }
-
-                    // If name doesn't exist, insert new record
-                    Console.WriteLine("351");
-
-                    signal = AudioOperations.OpenAudioFile(path);
-                    Console.WriteLine(path);
-                    Console.WriteLine(signal);
-
-                    try
-                    {
-                        Console.WriteLine("Before RemoveSilence"); // Debug
-                        signal = AudioOperations.RemoveSilence(signal);
-                        Console.WriteLine("After RemoveSilence"); 
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine("Error during RemoveSilence: " + ex.Message);
-                        MessageBox.Show("Error: " + ex.Message);
-                    }
-
-                    seq = AudioOperations.ExtractFeatures(signal);
-                    Console.WriteLine("360");
-
-                    // Serialize features
-                    double[][] features = new double[seq.Frames.Length][];
-                    for (int i = 0; i < seq.Frames.Length; i++)
-                        features[i] = seq.Frames[i].Features;
-
-                    string templateString = "";
-
-                    for (int i = 0; i < features.Length; i++)
-                    {
-                        string frame = string.Join(",", features[i]);
-                        templateString += frame + ";"; 
-                    }
-
-                    // Add to DB with template
-                    string insertSql = "INSERT INTO voice_enrollments (user_name, voice_path, template_seq) VALUES (@name, @path, @template)";
-                    using (var insertCmd = new SQLiteCommand(insertSql, conn))
-                    {
-                        insertCmd.Parameters.AddWithValue("@name", Name_box.Text);
-                        insertCmd.Parameters.AddWithValue("@path", path);
-                        insertCmd.Parameters.AddWithValue("@template", templateString);
-                        insertCmd.ExecuteNonQuery();
-                    }
-
-                    btnAdd.Enabled = false;
-                    Name_box.Text = null;
-                }
-            }
-            else if (!isSaved)
-            {
-                MessageBox.Show("Please Save the Record First!");
-            }
-            else
-            {
-                MessageBox.Show("Please Fill the requirements!");
-            }
-           
 
         }
 
@@ -416,26 +297,11 @@ namespace Recorder
             var hobba = TestcaseLoader.LoadTestcase2Training(fileDialog.FileName);
         }
 
-        private void btnIdentify_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void chart_Click(object sender, EventArgs e)
-        {
-
-        }
-
         private void button1_Click(object sender, EventArgs e)
         {
             Form2 mainForm = new Form2();
             mainForm.Show();
             this.Hide();
-        }
-
-        private void MainForm_Load(object sender, EventArgs e)
-        {
-
         }
     }
 }
