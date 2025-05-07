@@ -8,7 +8,7 @@ using Accord.DirectSound;
 using Accord.Audio.Filters;
 using Recorder.Recorder;
 using Recorder.MFCC;
-using System.Data.SQLite;
+using System.Data.SqlClient;
 
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
@@ -36,7 +36,7 @@ namespace Recorder
 
         private bool isRecorded;
         private bool isSaved;
-        private string dbPath;
+     
 
       
 
@@ -45,9 +45,7 @@ namespace Recorder
             InitializeComponent();
 
             //Your project solution path////////////////
-            string projectPath = @"C:\Users\youss\OneDrive\Desktop\speaker-identification-system\src";
-
-            dbPath = Path.Combine(projectPath, "DataBase", "voice_enrollment.db");
+           
 
 
             // Configure the wavechart
@@ -326,19 +324,23 @@ namespace Recorder
 
         private void btnAdd_Click(object sender, EventArgs e)
         {
-            //Add to Data Base Here/////////////////
-            if ((this.encoder != null || this.decoder != null) && !string.IsNullOrWhiteSpace(Name_box.Text) && isSaved) {
-                string connectionString = $"Data Source={dbPath};Version=3;";
-                using (var conn = new SQLiteConnection(connectionString))
+            if ((this.encoder != null || this.decoder != null) && !string.IsNullOrWhiteSpace(Name_box.Text) && isSaved)
+            {
+                //Fixed Path
+                string dbPath = "C:\\Users\\youss\\source\\repos\\Speaker_Identification\\src\\GUI\\voice_enrollment_data.mdf";
+                string connectionString = $@"Data Source=(localdb)\MSSQLLocalDB;AttachDbFilename={dbPath};Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
+
+
+                using (var conn = new SqlConnection(connectionString))
                 {
                     conn.Open();
 
                     // Check if name already exists
-                    string checkSql = "SELECT COUNT(*) FROM voice_enrollments WHERE user_name = @name";
-                    using (var checkCmd = new SQLiteCommand(checkSql, conn))
+                    string checkSql = "SELECT COUNT(*) FROM voice_enrollment_final WHERE user_name = @name";
+                    using (var checkCmd = new SqlCommand(checkSql, conn))
                     {
                         checkCmd.Parameters.AddWithValue("@name", Name_box.Text);
-                        long count = (long)checkCmd.ExecuteScalar();
+                        int count = (int)checkCmd.ExecuteScalar();
 
                         if (count > 0)
                         {
@@ -347,27 +349,25 @@ namespace Recorder
                         }
                     }
 
-                    // If name doesn't exist, insert new record
-                    Console.WriteLine("351");
-
+                    Console.WriteLine("Opening File");
                     signal = AudioOperations.OpenAudioFile(path);
-                    Console.WriteLine(path);
-                    Console.WriteLine(signal);
-
+                    Console.WriteLine("Done!");
                     try
                     {
-                        Console.WriteLine("Before RemoveSilence"); // Debug
+                        Console.WriteLine("Removing Silence");
                         signal = AudioOperations.RemoveSilence(signal);
-                        Console.WriteLine("After RemoveSilence"); 
+                        Console.WriteLine("Done!");
                     }
                     catch (Exception ex)
                     {
                         Console.WriteLine("Error during RemoveSilence: " + ex.Message);
                         MessageBox.Show("Error: " + ex.Message);
+                        return;
                     }
 
+                    Console.WriteLine("Extracting Features");
                     seq = AudioOperations.ExtractFeatures(signal);
-                    Console.WriteLine("360");
+                    Console.WriteLine("Done!");
 
                     // Serialize features
                     double[][] features = new double[seq.Frames.Length][];
@@ -379,12 +379,12 @@ namespace Recorder
                     for (int i = 0; i < features.Length; i++)
                     {
                         string frame = string.Join(",", features[i]);
-                        templateString += frame + ";"; 
+                        templateString += frame + ";";
                     }
 
-                    // Add to DB with template
-                    string insertSql = "INSERT INTO voice_enrollments (user_name, voice_path, template_seq) VALUES (@name, @path, @template)";
-                    using (var insertCmd = new SQLiteCommand(insertSql, conn))
+                    
+                    string insertSql = "INSERT INTO voice_enrollment_final (user_name, voice_path, template_seq) VALUES (@name, @path, @template)";
+                    using (var insertCmd = new SqlCommand(insertSql, conn))
                     {
                         insertCmd.Parameters.AddWithValue("@name", Name_box.Text);
                         insertCmd.Parameters.AddWithValue("@path", path);
@@ -404,9 +404,8 @@ namespace Recorder
             {
                 MessageBox.Show("Please Fill the requirements!");
             }
-           
-
         }
+
 
         private void loadTrain1ToolStripMenuItem_Click(object sender, EventArgs e)
         {
