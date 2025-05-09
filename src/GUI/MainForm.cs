@@ -326,8 +326,11 @@ namespace Recorder
         {
             if ((this.encoder != null || this.decoder != null) && !string.IsNullOrWhiteSpace(Name_box.Text) && isSaved)
             {
-                //Fixed Path
-                string dbPath = "C:\\Users\\youss\\source\\repos\\Speaker_Identification\\src\\GUI\\voice_enrollment_data.mdf";
+                //Dynamic Path
+                string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+                string projectRoot = Directory.GetParent(baseDirectory).Parent.Parent.FullName;
+                string dbPath = Path.Combine(projectRoot, "GUI", "voice_enrollment_data.mdf");
+                
                 string connectionString = $@"Data Source=(localdb)\MSSQLLocalDB;AttachDbFilename={dbPath};Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
 
 
@@ -390,6 +393,7 @@ namespace Recorder
                         insertCmd.Parameters.AddWithValue("@path", path);
                         insertCmd.Parameters.AddWithValue("@template", templateString);
                         insertCmd.ExecuteNonQuery();
+                        Console.WriteLine("Data Inserted Succesfully!");
                     }
 
                     btnAdd.Enabled = false;
@@ -402,7 +406,7 @@ namespace Recorder
             }
             else
             {
-                MessageBox.Show("Please Fill the requirements!");
+                MessageBox.Show("Please Fill the Name Field!");
             }
         }
 
@@ -413,6 +417,7 @@ namespace Recorder
             fileDialog.ShowDialog();
 
             var hobba = TestcaseLoader.LoadTestcase2Training(fileDialog.FileName);
+            Console.WriteLine(hobba);
         }
 
         private void btnIdentify_Click(object sender, EventArgs e)
