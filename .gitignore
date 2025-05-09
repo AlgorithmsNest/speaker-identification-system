@@ -1,6 +1,6 @@
-# DON'T INCLUDE : .bin , .obj , .vs , .suo , .v11.suo 
+# GIT will untrack : .bin , .obj , .vs , .suo , .v11.suo 
 # Build results
-#[Bb]in/
+[Bb]in/
 [Oo]bj/
 
 
