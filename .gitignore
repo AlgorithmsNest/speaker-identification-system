@@ -1,18 +1,18 @@
 # DON'T INCLUDE : .bin , .obj , .vs , .suo , .v11.suo 
 # Build results
-[Bb]in/
+#[Bb]in/
 [Oo]bj/
-*.dll
-*.exe
+
 
 # VS files
+.vs/
 *.user
 *.suo
 *.cache
 *.pdb
 *.vsp
 *.sdf
-*.dbmdl
+#*.dbmdl
 
 # Rider/JetBrains
 .idea/
