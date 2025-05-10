@@ -1,4 +1,4 @@
-﻿namespace Recorder.GUI
+﻿namespace Recorder
 {
     partial class Identification
     {

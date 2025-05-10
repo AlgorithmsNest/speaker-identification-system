@@ -12,7 +12,7 @@ using System.Data.SqlClient;
 
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
-namespace Recorder.GUI
+namespace Recorder
 {
     /// <summary>
     ///   Speaker Identification application.
@@ -391,8 +391,6 @@ namespace Recorder.GUI
                 MessageBox.Show("Please Save the Record First!");
             }           
         }
-
-
         private void loadTrain1ToolStripMenuItem_Click(object sender, EventArgs e)
         {
             OpenFileDialog fileDialog = new OpenFileDialog();
@@ -401,27 +399,11 @@ namespace Recorder.GUI
             var hobba = TestcaseLoader.LoadTestcase2Training(fileDialog.FileName);
             Console.WriteLine(hobba);
         }
-
-        private void btnIdentify_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void chart_Click(object sender, EventArgs e)
-        {
-
-        }
-
         private void button1_Click(object sender, EventArgs e)
         {
             Enroll_data mainForm = new Enroll_data();
             mainForm.Show();
             this.Hide();
-        }
-
-        private void MainForm_Load(object sender, EventArgs e)
-        {
-
-        }
+        }       
     }
 }

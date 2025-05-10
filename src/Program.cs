@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
 
-namespace Recorder.GUI
+namespace Recorder
 {
     static class Program
     {

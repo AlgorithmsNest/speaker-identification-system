@@ -1,4 +1,4 @@
-﻿namespace Recorder.GUI
+﻿namespace Recorder
 {
     partial class Enrollment
     {
@@ -165,7 +165,7 @@
             this.chart.Size = new System.Drawing.Size(179, 51);
             this.chart.TabIndex = 6;
             this.chart.Text = "chart1";
-            this.chart.Click += new System.EventHandler(this.chart_Click);
+            
             // 
             // lbPosition
             // 
@@ -227,7 +227,7 @@
             this.btnIdentify.TabIndex = 4;
             this.btnIdentify.Text = "s";
             this.btnIdentify.UseVisualStyleBackColor = true;
-            this.btnIdentify.Click += new System.EventHandler(this.btnIdentify_Click);
+            
             // 
             // trackBar1
             // 
@@ -283,8 +283,7 @@
             this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "Enrollment";
             this.Text = "Enrollment";
-            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.MainFormFormClosed);
-            this.Load += new System.EventHandler(this.MainForm_Load);
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.MainFormFormClosed);            
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).EndInit();
