@@ -8,14 +8,17 @@ using Accord.DirectSound;
 using Accord.Audio.Filters;
 using Recorder.Recorder;
 using Recorder.MFCC;
+using System.Data.SqlClient;
 
-namespace Recorder
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+
+namespace Recorder.GUI
 {
     /// <summary>
     ///   Speaker Identification application.
     /// </summary>
     /// 
-    public partial class MainForm : Form
+    public partial class Enrollment : Form
     {
         /// <summary>
         /// Data of the opened audio file, contains:
@@ -32,10 +35,19 @@ namespace Recorder
         private Decoder decoder;
 
         private bool isRecorded;
+        private bool isSaved;
 
-        public MainForm()
+        private string username_text;
+        private int id;
+
+        public Enrollment(string username, int userId)
         {
             InitializeComponent();
+
+            //Your project solution path////////////////
+            username_text=username;
+            id=userId;
+
 
             // Configure the wavechart
             chart.SimpleMode = true;
@@ -254,6 +266,7 @@ namespace Recorder
 
         private void saveFileDialog1_FileOk(object sender, System.ComponentModel.CancelEventArgs e)
         {
+            path = saveFileDialog1.FileName;
             if (this.encoder != null)
             {
                 Stream fileStream = saveFileDialog1.OpenFile();
@@ -264,6 +277,7 @@ namespace Recorder
         private void saveToolStripMenuItem_Click(object sender, EventArgs e)
         {
             saveFileDialog1.ShowDialog(this);
+            isSaved = true;
         }
 
         private void updateTimer_Tick(object sender, EventArgs e)
@@ -282,7 +296,10 @@ namespace Recorder
             {
                 isRecorded = false;
                 path = open.FileName;
+               
+                
                 //Open the selected audio file
+
                 signal = AudioOperations.OpenAudioFile(path);
                 signal = AudioOperations.RemoveSilence(signal);
                  seq = AudioOperations.ExtractFeatures(signal);
@@ -296,7 +313,7 @@ namespace Recorder
                     }
                 }
                 updateButtons();
-
+                isSaved = true;
             }
         }
 
@@ -308,8 +325,73 @@ namespace Recorder
 
         private void btnAdd_Click(object sender, EventArgs e)
         {
+            if ((this.encoder != null || this.decoder != null) && !string.IsNullOrWhiteSpace(username_text) && isSaved)
+            {
+                //Dynamic Path
+                string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+                string projectRoot = Directory.GetParent(baseDirectory).Parent.Parent.FullName;
+                string dbPath = Path.Combine(projectRoot, "GUI", "voice_enrollment_data.mdf");
+                
+                string connectionString = $@"Data Source=(localdb)\MSSQLLocalDB;AttachDbFilename={dbPath};Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
 
+
+                using (var conn = new SqlConnection(connectionString))
+                {
+                    conn.Open();
+                    
+                    Console.WriteLine("Opening File");
+                    signal = AudioOperations.OpenAudioFile(path);
+                    Console.WriteLine("Done!");
+                    try
+                    {
+                        Console.WriteLine("Removing Silence");
+                        signal = AudioOperations.RemoveSilence(signal);
+                        Console.WriteLine("Done!");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("Error during RemoveSilence: " + ex.Message);
+                        MessageBox.Show("Error: " + ex.Message);
+                        return;
+                    }
+
+                    Console.WriteLine("Extracting Features");
+                    seq = AudioOperations.ExtractFeatures(signal);
+                    Console.WriteLine("Done!");
+
+                    // Serialize features
+                    double[][] features = new double[seq.Frames.Length][];
+                    for (int i = 0; i < seq.Frames.Length; i++)
+                        features[i] = seq.Frames[i].Features;
+
+                    string templateString = "";
+
+                    for (int i = 0; i < features.Length; i++)
+                    {
+                        string frame = string.Join(",", features[i]);
+                        templateString += frame + ";";
+                    }
+
+                    
+                    string insertSql = "INSERT INTO voice_templates  (user_id, user_name, template_sequence) VALUES (@id, @name, @template)";
+                    using (var insertCmd = new SqlCommand(insertSql, conn))
+                    {                       
+                        insertCmd.Parameters.AddWithValue("@id", id);
+                        insertCmd.Parameters.AddWithValue("@name", username_text);
+                        insertCmd.Parameters.AddWithValue("@template", templateString);
+                        insertCmd.ExecuteNonQuery();
+                        Console.WriteLine("Data Inserted Succesfully!");
+                    }
+                    MessageBox.Show("Data Inserted Succesfully!");
+                    btnAdd.Enabled = false;                    
+                }
+            }
+            else if (!isSaved)
+            {
+                MessageBox.Show("Please Save the Record First!");
+            }           
         }
+
 
         private void loadTrain1ToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -317,11 +399,29 @@ namespace Recorder
             fileDialog.ShowDialog();
 
             var hobba = TestcaseLoader.LoadTestcase2Training(fileDialog.FileName);
+            Console.WriteLine(hobba);
         }
 
+        private void btnIdentify_Click(object sender, EventArgs e)
+        {
 
-        
+        }
 
+        private void chart_Click(object sender, EventArgs e)
+        {
 
-     }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            Enroll_data mainForm = new Enroll_data();
+            mainForm.Show();
+            this.Hide();
+        }
+
+        private void MainForm_Load(object sender, EventArgs e)
+        {
+
+        }
+    }
 }
