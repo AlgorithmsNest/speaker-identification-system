@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
 
-namespace Recorder
+namespace Recorder.GUI
 {
     static class Program
     {
@@ -13,7 +13,7 @@ namespace Recorder
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new MainForm());
+            Application.Run(new GUI());
         }
 
         [System.Runtime.InteropServices.DllImport("user32.dll")]
