@@ -17,7 +17,8 @@
 # Rider/JetBrains
 .idea/
 
-#Data Base
-*.mdf
-*.ldf
+#Data Base and Test Cases
+
+*.wav
+
 

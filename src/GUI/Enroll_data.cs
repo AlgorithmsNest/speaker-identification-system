@@ -54,13 +54,26 @@ namespace Recorder
                                 VALUES (@Username); 
                                 SELECT SCOPE_IDENTITY();";
 
+                    string checkQuery = @"SELECT COUNT(*) FROM voice_enrollment_final WHERE user_name = @Username";
+
                     try
                     {
                         // Open the connection
                         using (SqlConnection conn = new SqlConnection(connectionString))
                         {
                             conn.Open();
-                            // Create the command                        
+                            // Create the command
+                            using (SqlCommand checkCmd = new SqlCommand(checkQuery, conn))
+                            {
+                                checkCmd.Parameters.AddWithValue("@Username", username);
+                                int existingCount = (int)checkCmd.ExecuteScalar();
+
+                                if (existingCount > 0)
+                                {
+                                    MessageBox.Show($"The username '{username}' already exists. Please choose a different one.");
+                                    return;
+                                }
+                            }
                             using (SqlCommand cmd = new SqlCommand(query, conn))
                             {
                                 // Add parameters to avoid SQL injection                            
