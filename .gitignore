@@ -17,3 +17,7 @@
 # Rider/JetBrains
 .idea/
 
+#Data Base
+*.mdf
+*.ldf
+
