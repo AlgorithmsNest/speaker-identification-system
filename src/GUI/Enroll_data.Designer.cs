@@ -1,4 +1,4 @@
-﻿namespace Recorder.GUI
+﻿namespace Recorder
 {
     partial class Enroll_data
     {
@@ -35,6 +35,7 @@
             this.Save_button = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.user_button = new System.Windows.Forms.Button();
+            this.back_button = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // user_label
@@ -70,15 +71,15 @@
             this.ID_box.Name = "ID_box";
             this.ID_box.Size = new System.Drawing.Size(64, 24);
             this.ID_box.TabIndex = 3;
-            this.ID_box.SelectedIndexChanged += new System.EventHandler(this.ID_box_SelectedIndexChanged);
+          
             // 
             // Save_button
             // 
-            this.Save_button.Location = new System.Drawing.Point(207, 140);
+            this.Save_button.Location = new System.Drawing.Point(432, 105);
             this.Save_button.Name = "Save_button";
-            this.Save_button.Size = new System.Drawing.Size(123, 35);
+            this.Save_button.Size = new System.Drawing.Size(64, 30);
             this.Save_button.TabIndex = 4;
-            this.Save_button.Text = "Save Record";
+            this.Save_button.Text = "Next";
             this.Save_button.UseVisualStyleBackColor = true;
             this.Save_button.Click += new System.EventHandler(this.Save_button_Click);
             // 
@@ -86,11 +87,12 @@
             // 
             this.label1.AutoSize = true;
             this.label1.ForeColor = System.Drawing.Color.IndianRed;
-            this.label1.Location = new System.Drawing.Point(204, 111);
+            this.label1.Location = new System.Drawing.Point(390, 86);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(127, 16);
             this.label1.TabIndex = 5;
             this.label1.Text = "Try Record \"run run\"";
+           
             // 
             // user_button
             // 
@@ -102,11 +104,22 @@
             this.user_button.UseVisualStyleBackColor = true;
             this.user_button.Click += new System.EventHandler(this.user_button_Click);
             // 
+            // back_button
+            // 
+            this.back_button.Location = new System.Drawing.Point(12, 105);
+            this.back_button.Name = "back_button";
+            this.back_button.Size = new System.Drawing.Size(55, 30);
+            this.back_button.TabIndex = 12;
+            this.back_button.Text = "back";
+            this.back_button.UseVisualStyleBackColor = true;
+            this.back_button.Click += new System.EventHandler(this.back_button_Click);
+            // 
             // Enroll_data
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(529, 191);
+            this.ClientSize = new System.Drawing.Size(529, 146);
+            this.Controls.Add(this.back_button);
             this.Controls.Add(this.user_button);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.Save_button);
@@ -130,5 +143,6 @@
         private System.Windows.Forms.Button Save_button;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button user_button;
+        private System.Windows.Forms.Button back_button;
     }
 }

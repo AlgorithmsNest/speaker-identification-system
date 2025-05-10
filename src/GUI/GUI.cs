@@ -1,4 +1,4 @@
-﻿using Recorder.GUI;
+﻿//using Recorder;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace Recorder.GUI
+namespace Recorder
 {
     public partial class GUI : Form
     {

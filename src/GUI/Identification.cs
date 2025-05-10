@@ -11,7 +11,7 @@ using Recorder.MFCC;
 
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
-namespace Recorder.GUI
+namespace Recorder
 {
     public partial class Identification : Form
     {

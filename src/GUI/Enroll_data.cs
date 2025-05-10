@@ -11,12 +11,13 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
-namespace Recorder.GUI
+namespace Recorder
 {
     public partial class Enroll_data : Form
     {
         private bool isNew;        
         private string connectionString;
+        private int currID;
         public Enroll_data()
         {
             InitializeComponent();
@@ -67,12 +68,14 @@ namespace Recorder.GUI
 
                                 object resultId = cmd.ExecuteScalar();
                                 int newId = Convert.ToInt32(resultId);
-                                ID_box.Text = newId.ToString();
+                                currID = newId;                              
                                 MessageBox.Show($"Record inserted successfully!\nUsername: {username}\nUser ID: {newId}");
                             }
                         }
-                        Save_button.Enabled = isNew;
+                        Save_button.Enabled = true;
                         user_button.Enabled = false;
+                        ID_label.Visible = false;
+                        ID_box.Visible = false;
                     }
                     catch (Exception ex)
                     {
@@ -114,12 +117,12 @@ namespace Recorder.GUI
                         }
                         else
                         {
-                            ID_box.SelectedIndex = 0; // Optionally select the first ID
-                        }
-                        isNew = true;
-                        ID_label.Visible = true;
-                        ID_box.Visible = true;
-                        Save_button.Enabled = true;
+                            ID_box.SelectedIndex = 0;
+                            isNew = false;
+                            ID_label.Visible = true;
+                            ID_box.Visible = true;
+                            Save_button.Enabled = true;
+                        }                       
                     }
                     catch (Exception ex)
                     {
@@ -135,14 +138,24 @@ namespace Recorder.GUI
 
         private void Save_button_Click(object sender, EventArgs e)
         {
-            Enrollment mainForm = new Enrollment(user_box.Text, int.Parse(ID_box.SelectedItem.ToString()));
+            Enrollment mainForm;
+            
+            if (isNew)
+            {
+                mainForm = new Enrollment(user_box.Text, currID);
+            }
+            else
+            {
+                mainForm = new Enrollment(user_box.Text, int.Parse(ID_box.Text));
+            }
             mainForm.Show();
             this.Hide();
-        }
-
-        private void ID_box_SelectedIndexChanged(object sender, EventArgs e)
+        }      
+        private void back_button_Click(object sender, EventArgs e)
         {
-
+            GUI mainForm = new GUI();
+            mainForm.Show();
+            this.Hide();
         }
     }
 }
