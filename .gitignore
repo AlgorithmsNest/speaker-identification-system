@@ -18,7 +18,8 @@
 .idea/
 
 #Data Base and Test Cases
-
+*.mdf
+*.ldf
 *.wav
 
 
