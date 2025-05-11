@@ -25,7 +25,7 @@ namespace Recorder
         }
 
 
-        private static double MatchingVoices(MFCCFrame[] input, MFCCFrame[] template)
+        public static double MatchingVoices(MFCCFrame[] input, MFCCFrame[] template)
         {
 
             double[] prev = new double[template.Length + 1];

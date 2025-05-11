@@ -37,7 +37,7 @@ namespace Recorder
 
         private bool isRecorded;
         private bool isSaved;
-
+       
         private string username_text;
         private int id;
         private int currId;
@@ -401,14 +401,15 @@ namespace Recorder
             string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
             string projectRoot = Directory.GetParent(baseDirectory).Parent.Parent.FullName;
             string dbPath = Path.Combine(projectRoot, "GUI", "voice_enrollment_data.mdf");
-
+            //Console.WriteLine(hobba.Count);
             string connectionString = $@"Data Source=(localdb)\MSSQLLocalDB;AttachDbFilename={dbPath};Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
             for (int i = 0; i < hobba.Count; i++)
             {
-                var user = hobba[i];
-                for (int k = 0; k < user.UserTemplates.Count; k++)
+                //var hobba[i] = hobba[i];
+                for (int k = 0; k < hobba[i].UserTemplates.Count; k++)
                 {
-                    seq = AudioOperations.ExtractFeatures(user.UserTemplates[k]);
+                    //Console.WriteLine("In Function = "+hobba[i].UserTemplates.Count);
+                    seq = AudioOperations.ExtractFeatures(hobba[i].UserTemplates[k]);
                     //Console.WriteLine(seq.ToString());
                     double[][] features = new double[seq.Frames.Length][];
                     for (int j = 0; j < seq.Frames.Length; j++)
@@ -436,10 +437,10 @@ namespace Recorder
                                 INSERT INTO voice_enrollment_final (user_name) 
                                 VALUES (@Username); 
                                 SELECT SCOPE_IDENTITY();";
-                        string selectQuery = "SELECT template_sequence FROM voice_templates WHERE user_name = @userName ORDER BY user_id DESC";
+                       // string selectQuery = "SELECT template_sequence FROM voice_templates WHERE user_name = @userName ORDER BY user_id DESC";
                         using (SqlCommand checkCmd = new SqlCommand(checkQuery, conn))
                         {
-                            checkCmd.Parameters.AddWithValue("@Username", user.UserName);
+                            checkCmd.Parameters.AddWithValue("@Username", hobba[i].UserName);
                             int existingCount = (int)checkCmd.ExecuteScalar();
 
                             if (existingCount <= 0)
@@ -447,7 +448,7 @@ namespace Recorder
                                 using (SqlCommand cmd = new SqlCommand(query2, conn))
                                 {
                                     // Add parameters to avoid SQL injection                            
-                                    cmd.Parameters.AddWithValue("@Username", user.UserName);
+                                    cmd.Parameters.AddWithValue("@Username", hobba[i].UserName);
 
                                     object resultId = cmd.ExecuteScalar();
                                     int newId = Convert.ToInt32(resultId);
@@ -458,13 +459,13 @@ namespace Recorder
                         }
                         using (var insertCmd = new SqlCommand(insertSql, conn))
                         {
-                            Console.WriteLine("########################################################## ");
+                           // Console.WriteLine("########################################################## ");
                            // Console.WriteLine(" Seq = "+templateString);
                             insertCmd.Parameters.AddWithValue("@id", currId);
-                            insertCmd.Parameters.AddWithValue("@name", user.UserName);
+                            insertCmd.Parameters.AddWithValue("@name", hobba[i].UserName);
                             insertCmd.Parameters.AddWithValue("@template", templateString);
                             insertCmd.ExecuteNonQuery();
-                            Console.WriteLine("Data Inserted Succesfully!");
+                           // Console.WriteLine("Data Inserted Succesfully!");
                         }                      
                     }
                 }

@@ -63,6 +63,23 @@ namespace Recorder
             return ConcatenateSamples(originalDataset, 10);
         }
 
+        //11 users. each user has ~2 large sized training samples (with silent parts removed).
+        static public List<User> LoadTestcase3Training(string trainingListFileName)
+        {
+            var originalDataset = LoadDataset(trainingListFileName);
+
+            //shrinkage factor should be larger than 1.
+            return ConcatenateSamples(originalDataset, 40);
+        }
+
+        static public List<User> LoadTestcase3Testing(string testingListFileName)
+        {
+            var originalDataset = LoadDataset(testingListFileName);
+
+            //shrinkage factor should be larger than 1.
+            return ConcatenateSamples(originalDataset, 40);
+        }
+
         static private List<User> LoadDataset(string datasetFileName)
         {
             //Get The dataset folder path.
@@ -83,8 +100,6 @@ namespace Recorder
             {
                 string userName = line.Split('/')[0];
                 string fileName = line.Split('/')[1] + ".wav";
-               // Console.WriteLine(userName);
-               // Console.WriteLine(fileName);
                 //check if user already exists, if not add an entry in the dictionary.
                 if (users.ContainsKey(userName) == false)
                 {
@@ -95,7 +110,6 @@ namespace Recorder
                 }
                 AudioSignal audio;
                 string fullFileName = folderPath + userName + '\\' + fileName;
-               // Console.WriteLine(fullFileName);
                 try
                 {
                     audio = openNISTWav(fullFileName);
@@ -106,7 +120,6 @@ namespace Recorder
                 }
                 audio = AudioOperations.RemoveSilence(audio);
                 users[userName].UserTemplates.Add(audio);
-                //Console.WriteLine(audio);
             }
             reader.Close();
 
