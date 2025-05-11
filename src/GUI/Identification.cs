@@ -13,6 +13,8 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using System.Collections.Generic;
 using System.Linq;
 using System.Data.SqlClient;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
+using AForge.Math.Metrics;
 
 namespace Recorder
 {
@@ -276,24 +278,7 @@ namespace Recorder
         {
             if (this.encoder != null) { this.encoder.Stop(); }
             if (this.decoder != null) { this.decoder.Stop(); }
-        }
-
-        private void btnAdd_Click(object sender, EventArgs e)
-        {
-            //Write code here
-
-
-
-        }
-
-        private void loadTrain1ToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            OpenFileDialog fileDialog = new OpenFileDialog();
-            fileDialog.ShowDialog();
-
-            var hobba = TestcaseLoader.LoadTestcase2Training(fileDialog.FileName);
-        }
-
+        } 
         private void button1_Click(object sender, EventArgs e)
         {
             GUI mainForm = new GUI();
@@ -404,6 +389,63 @@ namespace Recorder
             updateButtons();
             updateWaveform(new float[BaseRecorder.FRAME_SIZE], BaseRecorder.FRAME_SIZE);
 
+        }
+
+        private void loadTrain1ToolStripMenuItem_Click_1(object sender, EventArgs e)
+        {
+            string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            string projectRoot = Directory.GetParent(baseDirectory).Parent.Parent.FullName;
+            string dbPath = Path.Combine(projectRoot, "GUI", "voice_enrollment_data.mdf");
+            OpenFileDialog fileDialog = new OpenFileDialog();
+            fileDialog.ShowDialog();
+
+            var hobba = TestcaseLoader.LoadTestcase2Testing(fileDialog.FileName);           
+            string connectionString = $@"Data Source=(localdb)\MSSQLLocalDB;AttachDbFilename={dbPath};Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
+            var templates = new Dictionary<string, MFCCFrame[]>();
+            List<string> bestMatches= new List<string>();
+            double min = double.PositiveInfinity;
+            string bestMatch = "";
+            using (var conn = new SqlConnection(connectionString))
+            {
+                conn.Open();
+                string sql = "SELECT user_name, template_sequence FROM voice_templates";
+                using (var cmd = new SqlCommand(sql, conn))
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        string user = reader.GetString(0);
+                        string templateString = reader.GetString(1);
+                        if (hobba.Any(h => h.UserName == user))
+                        {
+                            templates[user] = ParseTemplate(templateString);
+                        }
+                    }
+                }
+            }
+            for (int i = 0; i < hobba.Count; i++)
+            {
+                //var hobba[i] = hobba[i];
+                for (int k = 0; k < hobba[i].UserTemplates.Count; k++)
+                {
+                    //Console.WriteLine("In Function = "+hobba[i].UserTemplates.Count);
+                    seq = AudioOperations.ExtractFeatures(hobba[i].UserTemplates[k]);
+                    foreach (var kvp in templates)
+                    {
+                        string templateUser = kvp.Key;
+                        MFCCFrame[] templateSeq = kvp.Value;
+
+                        double distance = DTW.MatchingVoices(seq.Frames, templateSeq);
+                        if (distance < min)
+                        {
+                            min = distance;
+                            bestMatch = templateUser;
+                        }
+                    }
+                    bestMatches.Add(bestMatch);
+                    Console.WriteLine(bestMatch);
+                }
+            }            
         }
     }
 }

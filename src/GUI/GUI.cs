@@ -33,7 +33,7 @@ namespace Recorder
             using (var conn = new SqlConnection(connectionString))
             {
                 conn.Open();
-                using (var selectCmd = new SqlCommand(selectQuery, conn))
+                /*using (var selectCmd = new SqlCommand(selectQuery, conn))
                 {
                     selectCmd.Parameters.AddWithValue("@userName", "001");
 
@@ -49,7 +49,7 @@ namespace Recorder
                             Console.WriteLine("No inserted template found.");
                         }
                     }
-                }
+                }*/
             }
         }
 
