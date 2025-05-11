@@ -48,7 +48,6 @@
             this.lbLength = new System.Windows.Forms.Label();
             this.btnAdd = new System.Windows.Forms.Button();
             this.btnPlay = new System.Windows.Forms.Button();
-            this.btnIdentify = new System.Windows.Forms.Button();
             this.trackBar1 = new System.Windows.Forms.TrackBar();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
@@ -165,7 +164,6 @@
             this.chart.Size = new System.Drawing.Size(179, 51);
             this.chart.TabIndex = 6;
             this.chart.Text = "chart1";
-            
             // 
             // lbPosition
             // 
@@ -197,7 +195,7 @@
             this.btnAdd.Location = new System.Drawing.Point(15, 134);
             this.btnAdd.Margin = new System.Windows.Forms.Padding(4);
             this.btnAdd.Name = "btnAdd";
-            this.btnAdd.Size = new System.Drawing.Size(69, 38);
+            this.btnAdd.Size = new System.Drawing.Size(145, 38);
             this.btnAdd.TabIndex = 4;
             this.btnAdd.Text = "a";
             this.btnAdd.UseVisualStyleBackColor = true;
@@ -215,19 +213,6 @@
             this.btnPlay.Text = "4";
             this.btnPlay.UseVisualStyleBackColor = true;
             this.btnPlay.Click += new System.EventHandler(this.btnPlay_Click);
-            // 
-            // btnIdentify
-            // 
-            this.btnIdentify.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.btnIdentify.Font = new System.Drawing.Font("Webdings", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(2)));
-            this.btnIdentify.Location = new System.Drawing.Point(91, 134);
-            this.btnIdentify.Margin = new System.Windows.Forms.Padding(4);
-            this.btnIdentify.Name = "btnIdentify";
-            this.btnIdentify.Size = new System.Drawing.Size(69, 38);
-            this.btnIdentify.TabIndex = 4;
-            this.btnIdentify.Text = "s";
-            this.btnIdentify.UseVisualStyleBackColor = true;
-            
             // 
             // trackBar1
             // 
@@ -271,7 +256,6 @@
             this.Controls.Add(this.lbPosition);
             this.Controls.Add(this.chart);
             this.Controls.Add(this.btnPlay);
-            this.Controls.Add(this.btnIdentify);
             this.Controls.Add(this.btnAdd);
             this.Controls.Add(this.btnRecord);
             this.Controls.Add(this.btnStop);
@@ -283,7 +267,7 @@
             this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "Enrollment";
             this.Text = "Enrollment";
-            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.MainFormFormClosed);            
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.MainFormFormClosed);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).EndInit();
@@ -302,7 +286,6 @@
         private System.Windows.Forms.Label lbLength;
         private System.Windows.Forms.Button btnAdd;
         private System.Windows.Forms.Button btnPlay;
-        private System.Windows.Forms.Button btnIdentify;
         private System.Windows.Forms.TrackBar trackBar1;
         private System.Windows.Forms.ToolStripMenuItem saveToolStripMenuItem;
         private System.Windows.Forms.SaveFileDialog saveFileDialog1;

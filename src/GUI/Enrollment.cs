@@ -11,6 +11,7 @@ using Recorder.MFCC;
 using System.Data.SqlClient;
 
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
 namespace Recorder
 {
@@ -39,7 +40,7 @@ namespace Recorder
 
         private string username_text;
         private int id;
-
+        private int currId;
         public Enrollment(string username, int userId)
         {
             InitializeComponent();
@@ -232,7 +233,7 @@ namespace Recorder
             if (this.encoder != null && this.encoder.IsRunning())
             {
                 btnAdd.Enabled = false;
-                btnIdentify.Enabled = false;
+                
                 btnPlay.Enabled = false;
                 btnStop.Enabled = true;
                 btnRecord.Enabled = false;
@@ -241,7 +242,7 @@ namespace Recorder
             else if (this.decoder != null && this.decoder.IsRunning())
             {
                 btnAdd.Enabled = false;
-                btnIdentify.Enabled = false;
+                
                 btnPlay.Enabled = false;
                 btnStop.Enabled = true;
                 btnRecord.Enabled = false;
@@ -250,7 +251,7 @@ namespace Recorder
             else
             {
                 btnAdd.Enabled = this.path != null || this.encoder != null;
-                btnIdentify.Enabled = false;
+               
                 btnPlay.Enabled = this.path != null || this.encoder != null;//stream != null;
                 btnStop.Enabled = false;
                 btnRecord.Enabled = true;
@@ -397,7 +398,72 @@ namespace Recorder
             fileDialog.ShowDialog();
 
             var hobba = TestcaseLoader.LoadTestcase2Training(fileDialog.FileName);
-            Console.WriteLine(hobba);
+            string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            string projectRoot = Directory.GetParent(baseDirectory).Parent.Parent.FullName;
+            string dbPath = Path.Combine(projectRoot, "GUI", "voice_enrollment_data.mdf");
+
+            string connectionString = $@"Data Source=(localdb)\MSSQLLocalDB;AttachDbFilename={dbPath};Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
+            for (int i = 0; i < hobba.Count; i++)
+            {
+                var user = hobba[i];
+                for (int k = 0; k < user.UserTemplates.Count; k++)
+                {
+                    seq = AudioOperations.ExtractFeatures(user.UserTemplates[k]);
+                    double[][] features = new double[seq.Frames.Length][];
+
+                    for (int j = 0; j < seq.Frames.Length; j++)
+                        features[j] = seq.Frames[j].Features;
+
+                    string templateString = "";
+
+                    for (int x = 0; x < features.Length; x++)
+                    {
+                        string frame = string.Join(",", features[x]);
+                        templateString += frame + ";";
+                    }
+
+                    // You can now use templateString as needed
+
+                    using (var conn = new SqlConnection(connectionString))
+                    {
+                        conn.Open();
+                        string insertSql = "INSERT INTO voice_templates  (user_id, user_name, template_sequence) VALUES (@id, @name, @template)";
+                        string checkQuery = @"SELECT COUNT(*) FROM voice_enrollment_final WHERE user_name = @Username";
+                        string query2 = @"
+                                INSERT INTO voice_enrollment_final (user_name) 
+                                VALUES (@Username); 
+                                SELECT SCOPE_IDENTITY();";
+
+                        using (SqlCommand checkCmd = new SqlCommand(checkQuery, conn))
+                        {
+                            checkCmd.Parameters.AddWithValue("@Username", hobba[i].UserName);
+                            int existingCount = (int)checkCmd.ExecuteScalar();
+
+                            if (existingCount <= 0)
+                            {
+                                using (SqlCommand cmd = new SqlCommand(query2, conn))
+                                {
+                                    // Add parameters to avoid SQL injection                            
+                                    cmd.Parameters.AddWithValue("@Username", hobba[i].UserName);
+
+                                    object resultId = cmd.ExecuteScalar();
+                                    int newId = Convert.ToInt32(resultId);
+                                    currId = newId;
+                                }
+                                using (var insertCmd = new SqlCommand(insertSql, conn))
+                                {
+                                    insertCmd.Parameters.AddWithValue("@id", currId);
+                                    insertCmd.Parameters.AddWithValue("@name", hobba[i].UserName);
+                                    insertCmd.Parameters.AddWithValue("@template", templateString);
+                                    insertCmd.ExecuteNonQuery();
+                                    Console.WriteLine("Data Inserted Succesfully!");
+                                }
+                            }
+                        }
+
+                    }
+                }
+            }            
         }
         private void button1_Click(object sender, EventArgs e)
         {
