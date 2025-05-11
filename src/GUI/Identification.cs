@@ -10,10 +10,13 @@ using Recorder.Recorder;
 using Recorder.MFCC;
 
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using System.Collections.Generic;
+using System.Linq;
+using System.Data.SqlClient;
 
 namespace Recorder
 {
-    public partial class Identification : Form
+    public partial class Form1 : Form
     {
         private AudioSignal signal = null;
         Sequence seq = null;
@@ -25,7 +28,7 @@ namespace Recorder
 
         private bool isRecorded;
         private bool isSaved;
-        public Identification()
+        public Form1()
         {
             InitializeComponent();
             Name_box.ReadOnly = true;
@@ -76,13 +79,7 @@ namespace Recorder
         ///   Stops recording or playing a stream.
         /// </summary>
         /// 
-        private void btnStop_Click(object sender, EventArgs e)
-        {
-            Stop();
-            updateButtons();
-            updateWaveform(new float[BaseRecorder.FRAME_SIZE], BaseRecorder.FRAME_SIZE);
-        }
-
+       
         /// <summary>
         ///   This callback will be called when there is some error with the audio 
         ///   source. It can be used to route exceptions so they don't compromise 
@@ -205,7 +202,7 @@ namespace Recorder
 
             if (this.encoder != null && this.encoder.IsRunning())
             {
-                btnAdd.Enabled = false;
+                
                 btnIdentify.Enabled = false;
                 btnPlay.Enabled = false;
                 btnStop.Enabled = true;
@@ -214,7 +211,7 @@ namespace Recorder
             }
             else if (this.decoder != null && this.decoder.IsRunning())
             {
-                btnAdd.Enabled = false;
+                
                 btnIdentify.Enabled = false;
                 btnPlay.Enabled = false;
                 btnStop.Enabled = true;
@@ -223,8 +220,8 @@ namespace Recorder
             }
             else
             {
-                btnAdd.Enabled = this.path != null || this.encoder != null;
-                btnIdentify.Enabled = false;
+                
+                btnIdentify.Enabled = seq != null;
                 btnPlay.Enabled = this.path != null || this.encoder != null;//stream != null;
                 btnStop.Enabled = false;
                 btnRecord.Enabled = true;
@@ -302,6 +299,111 @@ namespace Recorder
             GUI mainForm = new GUI();
             mainForm.Show();
             this.Hide();
+        }
+        private MFCCFrame[] ParseTemplate(string templateString)
+        {
+            var frames = new List<MFCCFrame>();
+
+            // Split the whole string into frame strings using ';'
+            string[] frameStrings = templateString.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+
+            foreach (string frame in frameStrings)
+            {
+                // Split each frame string into 13 MFCC values using ','
+                string[] coef = frame.Split(',');
+
+                var mfcc = new MFCCFrame();
+                mfcc.Features = coef.Select(double.Parse).ToArray();  // requires using System.Linq;
+                frames.Add(mfcc);
+            }
+
+            return frames.ToArray();
+        }
+        private void btnIdentify_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (seq == null)
+                {
+                    MessageBox.Show("Please record or load an audio first.");
+                    return;
+                }
+
+                var inputFrames = seq.Frames;
+
+                string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+                string projectRoot = Directory.GetParent(baseDirectory).Parent.Parent.FullName;
+                string dbPath = Path.Combine(projectRoot, "GUI", "voice_enrollment_data.mdf");
+                string connectionString = $@"Data Source=(localdb)\MSSQLLocalDB;AttachDbFilename={dbPath};Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
+                var templates = new Dictionary<string, MFCCFrame[]>();
+
+                using (var conn = new SqlConnection(connectionString))
+                {
+                    conn.Open();
+                    string sql = "SELECT user_name, template_sequence FROM voice_templates";
+                    using (var cmd = new SqlCommand(sql, conn))
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            string user = reader.GetString(0);
+                            string templateString = reader.GetString(1);
+                            templates[user] = ParseTemplate(templateString);
+                        }
+                    }
+                }
+
+                string bestMatch = DTW.MatchingVoicesTimeSync(inputFrames, templates);
+                Name_box.Text = bestMatch ?? "No match found";
+            }
+            catch (Exception ex)
+            {
+                Name_box.Text = "Error";
+                MessageBox.Show("Identification failed: " + ex.Message);
+            }
+        }
+
+        private void btnRecord_Click_1(object sender, EventArgs e)
+        {
+            isRecorded = true;
+            this.encoder = new Encoder(source_NewFrame, source_AudioSourceError);
+            this.encoder.Start();
+            updateButtons();
+        }
+
+        private void btnPlay_Click_1(object sender, EventArgs e)
+        {
+            InitializeDecoder();
+            // Configure the track bar so the cursor
+            // can show the proper current position
+            if (trackBar1.Value < this.decoder.frames)
+                this.decoder.Seek(trackBar1.Value);
+            trackBar1.Maximum = this.decoder.samples;
+            this.decoder.Start();
+            updateButtons();
+        }
+
+
+        private void btnStop_Click_1(object sender, EventArgs e)
+        {
+            Stop();
+            if (encoder?.stream != null)
+            {
+                encoder.stream.Seek(0, SeekOrigin.Begin);
+                path = Path.GetTempFileName() + ".wav";
+
+                using (FileStream fs = new FileStream(path, FileMode.Create))
+                {
+                    encoder.Save(fs);
+                }
+
+                signal = AudioOperations.OpenAudioFile(path);
+                signal = AudioOperations.RemoveSilence(signal);
+                seq = AudioOperations.ExtractFeatures(signal);
+            }
+            updateButtons();
+            updateWaveform(new float[BaseRecorder.FRAME_SIZE], BaseRecorder.FRAME_SIZE);
+
         }
     }
 }

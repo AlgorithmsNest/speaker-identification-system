@@ -1,6 +1,6 @@
 ﻿namespace Recorder
 {
-    partial class Identification
+    partial class Form1
     {
         /// <summary>
         /// Required designer variable.
@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Identification));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.Name_box = new System.Windows.Forms.TextBox();
             this.Name_label = new System.Windows.Forms.Label();
             this.lbLength = new System.Windows.Forms.Label();
@@ -36,7 +36,6 @@
             this.chart = new Accord.Controls.Wavechart();
             this.btnPlay = new System.Windows.Forms.Button();
             this.btnIdentify = new System.Windows.Forms.Button();
-            this.btnAdd = new System.Windows.Forms.Button();
             this.btnRecord = new System.Windows.Forms.Button();
             this.btnStop = new System.Windows.Forms.Button();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
@@ -53,8 +52,9 @@
             // Name_box
             // 
             this.Name_box.Location = new System.Drawing.Point(235, 188);
+            this.Name_box.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.Name_box.Name = "Name_box";
-            this.Name_box.Size = new System.Drawing.Size(142, 22);
+            this.Name_box.Size = new System.Drawing.Size(143, 22);
             this.Name_box.TabIndex = 22;
             // 
             // Name_label
@@ -69,10 +69,10 @@
             // lbLength
             // 
             this.lbLength.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lbLength.Location = new System.Drawing.Point(286, 32);
+            this.lbLength.Location = new System.Drawing.Point(285, 32);
             this.lbLength.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lbLength.Name = "lbLength";
-            this.lbLength.Size = new System.Drawing.Size(90, 51);
+            this.lbLength.Size = new System.Drawing.Size(91, 50);
             this.lbLength.TabIndex = 18;
             this.lbLength.Text = "Length: 00.00 sec.";
             this.lbLength.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -80,10 +80,10 @@
             // lbPosition
             // 
             this.lbPosition.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lbPosition.Location = new System.Drawing.Point(2, 32);
+            this.lbPosition.Location = new System.Drawing.Point(3, 32);
             this.lbPosition.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lbPosition.Name = "lbPosition";
-            this.lbPosition.Size = new System.Drawing.Size(90, 51);
+            this.lbPosition.Size = new System.Drawing.Size(91, 50);
             this.lbPosition.TabIndex = 19;
             this.lbPosition.Text = "Position: 00.00 sec.";
             this.lbPosition.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -93,12 +93,12 @@
             this.chart.BackColor = System.Drawing.Color.Black;
             this.chart.ForeColor = System.Drawing.Color.DarkGreen;
             this.chart.Location = new System.Drawing.Point(99, 32);
-            this.chart.Margin = new System.Windows.Forms.Padding(4);
+            this.chart.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.chart.Name = "chart";
             this.chart.RangeX = ((AForge.DoubleRange)(resources.GetObject("chart.RangeX")));
             this.chart.RangeY = ((AForge.DoubleRange)(resources.GetObject("chart.RangeY")));
             this.chart.SimpleMode = false;
-            this.chart.Size = new System.Drawing.Size(179, 51);
+            this.chart.Size = new System.Drawing.Size(179, 50);
             this.chart.TabIndex = 17;
             this.chart.Text = "chart1";
             // 
@@ -107,62 +107,52 @@
             this.btnPlay.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.btnPlay.Font = new System.Drawing.Font("Webdings", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(2)));
             this.btnPlay.Location = new System.Drawing.Point(231, 132);
-            this.btnPlay.Margin = new System.Windows.Forms.Padding(4);
+            this.btnPlay.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.btnPlay.Name = "btnPlay";
             this.btnPlay.Size = new System.Drawing.Size(69, 38);
             this.btnPlay.TabIndex = 12;
             this.btnPlay.Text = "4";
             this.btnPlay.UseVisualStyleBackColor = true;
+            this.btnPlay.Click += new System.EventHandler(this.btnPlay_Click_1);
             // 
             // btnIdentify
             // 
             this.btnIdentify.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.btnIdentify.Font = new System.Drawing.Font("Webdings", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(2)));
-            this.btnIdentify.Location = new System.Drawing.Point(78, 132);
-            this.btnIdentify.Margin = new System.Windows.Forms.Padding(4);
+            this.btnIdentify.Location = new System.Drawing.Point(13, 132);
+            this.btnIdentify.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.btnIdentify.Name = "btnIdentify";
-            this.btnIdentify.Size = new System.Drawing.Size(69, 38);
+            this.btnIdentify.Size = new System.Drawing.Size(133, 38);
             this.btnIdentify.TabIndex = 13;
             this.btnIdentify.Text = "s";
             this.btnIdentify.UseVisualStyleBackColor = true;
-            // 
-            // btnAdd
-            // 
-            this.btnAdd.Enabled = false;
-            this.btnAdd.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.btnAdd.Font = new System.Drawing.Font("Webdings", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(2)));
-            this.btnAdd.Location = new System.Drawing.Point(2, 132);
-            this.btnAdd.Margin = new System.Windows.Forms.Padding(4);
-            this.btnAdd.Name = "btnAdd";
-            this.btnAdd.Size = new System.Drawing.Size(69, 38);
-            this.btnAdd.TabIndex = 14;
-            this.btnAdd.Text = "a";
-            this.btnAdd.UseVisualStyleBackColor = true;
-            this.btnAdd.Click += new System.EventHandler(this.btnAdd_Click);
+            this.btnIdentify.Click += new System.EventHandler(this.btnIdentify_Click);
             // 
             // btnRecord
             // 
             this.btnRecord.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.btnRecord.Font = new System.Drawing.Font("Webdings", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(2)));
             this.btnRecord.Location = new System.Drawing.Point(307, 132);
-            this.btnRecord.Margin = new System.Windows.Forms.Padding(4);
+            this.btnRecord.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.btnRecord.Name = "btnRecord";
             this.btnRecord.Size = new System.Drawing.Size(69, 38);
             this.btnRecord.TabIndex = 15;
             this.btnRecord.Text = "=";
             this.btnRecord.UseVisualStyleBackColor = true;
+            this.btnRecord.Click += new System.EventHandler(this.btnRecord_Click_1);
             // 
             // btnStop
             // 
             this.btnStop.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.btnStop.Font = new System.Drawing.Font("Webdings", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(2)));
             this.btnStop.Location = new System.Drawing.Point(155, 132);
-            this.btnStop.Margin = new System.Windows.Forms.Padding(4);
+            this.btnStop.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.btnStop.Name = "btnStop";
             this.btnStop.Size = new System.Drawing.Size(69, 38);
             this.btnStop.TabIndex = 16;
             this.btnStop.Text = "<";
             this.btnStop.UseVisualStyleBackColor = true;
+            this.btnStop.Click += new System.EventHandler(this.btnStop_Click_1);
             // 
             // menuStrip1
             // 
@@ -171,6 +161,7 @@
             this.fileToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
+            this.menuStrip1.Padding = new System.Windows.Forms.Padding(5, 2, 0, 2);
             this.menuStrip1.Size = new System.Drawing.Size(389, 28);
             this.menuStrip1.TabIndex = 11;
             this.menuStrip1.Text = "menuStrip1";
@@ -190,6 +181,7 @@
             this.openToolStripMenuItem.Name = "openToolStripMenuItem";
             this.openToolStripMenuItem.Size = new System.Drawing.Size(128, 26);
             this.openToolStripMenuItem.Text = "Open";
+            this.openToolStripMenuItem.Click += new System.EventHandler(this.openToolStripMenuItem_Click);
             // 
             // toolStripSeparator1
             // 
@@ -204,24 +196,25 @@
             // 
             // trackBar1
             // 
-            this.trackBar1.Location = new System.Drawing.Point(2, 90);
-            this.trackBar1.Margin = new System.Windows.Forms.Padding(4);
+            this.trackBar1.Location = new System.Drawing.Point(3, 90);
+            this.trackBar1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.trackBar1.Name = "trackBar1";
-            this.trackBar1.Size = new System.Drawing.Size(374, 56);
+            this.trackBar1.Size = new System.Drawing.Size(373, 56);
             this.trackBar1.TabIndex = 20;
             this.trackBar1.TickStyle = System.Windows.Forms.TickStyle.None;
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(12, 184);
+            this.button1.Location = new System.Drawing.Point(13, 191);
+            this.button1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(48, 31);
+            this.button1.Size = new System.Drawing.Size(48, 23);
             this.button1.TabIndex = 23;
             this.button1.Text = "back";
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
-            // Identification
+            // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -234,12 +227,12 @@
             this.Controls.Add(this.chart);
             this.Controls.Add(this.btnPlay);
             this.Controls.Add(this.btnIdentify);
-            this.Controls.Add(this.btnAdd);
             this.Controls.Add(this.btnRecord);
             this.Controls.Add(this.btnStop);
             this.Controls.Add(this.menuStrip1);
             this.Controls.Add(this.trackBar1);
-            this.Name = "Identification";
+            this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.Name = "Form1";
             this.Text = "Identification";
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
@@ -258,7 +251,6 @@
         private Accord.Controls.Wavechart chart;
         private System.Windows.Forms.Button btnPlay;
         private System.Windows.Forms.Button btnIdentify;
-        private System.Windows.Forms.Button btnAdd;
         private System.Windows.Forms.Button btnRecord;
         private System.Windows.Forms.Button btnStop;
         private System.Windows.Forms.MenuStrip menuStrip1;
