@@ -83,6 +83,8 @@ namespace Recorder
             {
                 string userName = line.Split('/')[0];
                 string fileName = line.Split('/')[1] + ".wav";
+               // Console.WriteLine(userName);
+               // Console.WriteLine(fileName);
                 //check if user already exists, if not add an entry in the dictionary.
                 if (users.ContainsKey(userName) == false)
                 {
@@ -93,6 +95,7 @@ namespace Recorder
                 }
                 AudioSignal audio;
                 string fullFileName = folderPath + userName + '\\' + fileName;
+               // Console.WriteLine(fullFileName);
                 try
                 {
                     audio = openNISTWav(fullFileName);
@@ -103,6 +106,7 @@ namespace Recorder
                 }
                 audio = AudioOperations.RemoveSilence(audio);
                 users[userName].UserTemplates.Add(audio);
+                //Console.WriteLine(audio);
             }
             reader.Close();
 

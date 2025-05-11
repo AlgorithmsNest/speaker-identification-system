@@ -409,17 +409,20 @@ namespace Recorder
                 for (int k = 0; k < user.UserTemplates.Count; k++)
                 {
                     seq = AudioOperations.ExtractFeatures(user.UserTemplates[k]);
+                    //Console.WriteLine(seq.ToString());
                     double[][] features = new double[seq.Frames.Length][];
-
                     for (int j = 0; j < seq.Frames.Length; j++)
+                    {
                         features[j] = seq.Frames[j].Features;
-
+                       // Console.WriteLine(features[j].ToString());
+                    }                       
                     string templateString = "";
 
                     for (int x = 0; x < features.Length; x++)
                     {
                         string frame = string.Join(",", features[x]);
                         templateString += frame + ";";
+                       // Console.WriteLine(templateString);
                     }
 
                     // You can now use templateString as needed
@@ -433,10 +436,10 @@ namespace Recorder
                                 INSERT INTO voice_enrollment_final (user_name) 
                                 VALUES (@Username); 
                                 SELECT SCOPE_IDENTITY();";
-
+                        string selectQuery = "SELECT template_sequence FROM voice_templates WHERE user_name = @userName ORDER BY user_id DESC";
                         using (SqlCommand checkCmd = new SqlCommand(checkQuery, conn))
                         {
-                            checkCmd.Parameters.AddWithValue("@Username", hobba[i].UserName);
+                            checkCmd.Parameters.AddWithValue("@Username", user.UserName);
                             int existingCount = (int)checkCmd.ExecuteScalar();
 
                             if (existingCount <= 0)
@@ -444,7 +447,7 @@ namespace Recorder
                                 using (SqlCommand cmd = new SqlCommand(query2, conn))
                                 {
                                     // Add parameters to avoid SQL injection                            
-                                    cmd.Parameters.AddWithValue("@Username", hobba[i].UserName);
+                                    cmd.Parameters.AddWithValue("@Username", user.UserName);
 
                                     object resultId = cmd.ExecuteScalar();
                                     int newId = Convert.ToInt32(resultId);
@@ -455,15 +458,18 @@ namespace Recorder
                         }
                         using (var insertCmd = new SqlCommand(insertSql, conn))
                         {
+                            Console.WriteLine("########################################################## ");
+                           // Console.WriteLine(" Seq = "+templateString);
                             insertCmd.Parameters.AddWithValue("@id", currId);
-                            insertCmd.Parameters.AddWithValue("@name", hobba[i].UserName);
+                            insertCmd.Parameters.AddWithValue("@name", user.UserName);
                             insertCmd.Parameters.AddWithValue("@template", templateString);
                             insertCmd.ExecuteNonQuery();
                             Console.WriteLine("Data Inserted Succesfully!");
-                        }
+                        }                      
                     }
                 }
-            }            
+            }
+            Console.WriteLine("Completely Done!");
         }
         private void button1_Click(object sender, EventArgs e)
         {
