@@ -450,17 +450,17 @@ namespace Recorder
                                     int newId = Convert.ToInt32(resultId);
                                     currId = newId;
                                 }
-                                using (var insertCmd = new SqlCommand(insertSql, conn))
-                                {
-                                    insertCmd.Parameters.AddWithValue("@id", currId);
-                                    insertCmd.Parameters.AddWithValue("@name", hobba[i].UserName);
-                                    insertCmd.Parameters.AddWithValue("@template", templateString);
-                                    insertCmd.ExecuteNonQuery();
-                                    Console.WriteLine("Data Inserted Succesfully!");
-                                }
+                               
                             }
                         }
-
+                        using (var insertCmd = new SqlCommand(insertSql, conn))
+                        {
+                            insertCmd.Parameters.AddWithValue("@id", currId);
+                            insertCmd.Parameters.AddWithValue("@name", hobba[i].UserName);
+                            insertCmd.Parameters.AddWithValue("@template", templateString);
+                            insertCmd.ExecuteNonQuery();
+                            Console.WriteLine("Data Inserted Succesfully!");
+                        }
                     }
                 }
             }            
