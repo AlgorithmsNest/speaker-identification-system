@@ -27,7 +27,7 @@ namespace Recorder
 
         private void button2_Click(object sender, EventArgs e)
         {
-            Identification mainForm = new Identification();
+            Form1 mainForm = new Form1();
             mainForm.Show();
             this.Hide();
         }
