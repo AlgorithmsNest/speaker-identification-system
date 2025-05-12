@@ -403,8 +403,7 @@ namespace Recorder
             string connectionString = $@"Data Source=(localdb)\MSSQLLocalDB;AttachDbFilename={dbPath};Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
             var templates = new Dictionary<string, MFCCFrame[]>();
             List<string> bestMatches= new List<string>();
-            double min = double.PositiveInfinity;
-            string bestMatch = "";
+            
             using (var conn = new SqlConnection(connectionString))
             {
                 conn.Open();
@@ -430,6 +429,8 @@ namespace Recorder
                 {
                     //Console.WriteLine("In Function = "+hobba[i].UserTemplates.Count);
                     seq = AudioOperations.ExtractFeatures(hobba[i].UserTemplates[k]);
+                    double min = double.PositiveInfinity;
+                    string bestMatch = "";
                     foreach (var kvp in templates)
                     {
                         string templateUser = kvp.Key;
