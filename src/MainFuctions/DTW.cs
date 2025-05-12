@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Recorder
 {
@@ -52,6 +53,23 @@ namespace Recorder
 
             return prev[template.Length];
 
+        }
+        public static string MatchingVoicesTimeSync(MFCCFrame[] input, Dictionary<string, MFCCFrame[]> templates)
+        {
+            var matchers = templates
+                .Select(t => new TemplateMatcher(t.Key, t.Value))
+                .ToList();
+
+            foreach (var frame in input)
+            {
+                Parallel.ForEach(matchers, matcher =>
+                {
+                    matcher.match(frame);
+                });
+            }
+
+            var best = matchers.OrderBy(m => m.CurrentScore).FirstOrDefault();
+            return best?.Name;
         }
     }
 }
