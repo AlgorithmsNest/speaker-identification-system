@@ -28,29 +28,27 @@ namespace Recorder
             string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
             string projectRoot = Directory.GetParent(baseDirectory).Parent.Parent.FullName;
             string dbPath = Path.Combine(projectRoot, "GUI", "voice_enrollment_data.mdf");
-            string selectQuery = "SELECT template_sequence FROM voice_templates WHERE user_name = @userName ORDER BY user_id DESC";
+           
             string connectionString = $@"Data Source=(localdb)\MSSQLLocalDB;AttachDbFilename={dbPath};Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
-            using (var conn = new SqlConnection(connectionString))
+            /*using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 conn.Open();
-                /*using (var selectCmd = new SqlCommand(selectQuery, conn))
-                {
-                    selectCmd.Parameters.AddWithValue("@userName", "001");
 
-                    using (SqlDataReader reader = selectCmd.ExecuteReader())
+                string selectQuery = "SELECT template_sequence FROM voice_templates";
+
+                using (SqlCommand cmd = new SqlCommand(selectQuery, conn))
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    int row = 0;
+                    while (reader.Read())
                     {
-                        if (reader.Read())
-                        {
-                            string insertedTemplate = reader["template_sequence"].ToString();
-                            Console.WriteLine("Inserted template: " + insertedTemplate);
-                        }
-                        else
-                        {
-                            Console.WriteLine("No inserted template found.");
-                        }
+                        string template = reader["template_sequence"] as string;
+                        Console.WriteLine($"Row {++row}:\n");
+                        Console.WriteLine(template);
+                        Console.WriteLine("------------------------------------------------------\n");
                     }
-                }*/
-            }
+                }
+            }*/
         }
 
         private void button2_Click(object sender, EventArgs e)

@@ -12,6 +12,9 @@ using System.Data.SqlClient;
 
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
+using System.Data;
+using System.Collections.Generic;
+
 
 namespace Recorder
 {
@@ -365,14 +368,14 @@ namespace Recorder
                     for (int i = 0; i < seq.Frames.Length; i++)
                         features[i] = seq.Frames[i].Features;
 
-                    string templateString = "";
 
+                    string templateString ="";
                     for (int i = 0; i < features.Length; i++)
                     {
                         string frame = string.Join(",", features[i]);
-                        templateString += frame + ";";
+                       templateString += frame + ";";
                     }
-
+                   
                     
                     string insertSql = "INSERT INTO voice_templates  (user_id, user_name, template_sequence) VALUES (@id, @name, @template)";
                     using (var insertCmd = new SqlCommand(insertSql, conn))
@@ -417,15 +420,16 @@ namespace Recorder
                         features[j] = seq.Frames[j].Features;
                        // Console.WriteLine(features[j].ToString());
                     }                       
-                    string templateString = "";
+                    
+                    List<string> frameStrings = new List<string>();
 
                     for (int x = 0; x < features.Length; x++)
                     {
-                        string frame = string.Join(",", features[x]);
-                        templateString += frame + ";";
-                       // Console.WriteLine(templateString);
+                        frameStrings.Add(string.Join(",", features[x]));
+                        // Console.WriteLine(templateString);
                     }
-
+                    string templateString = string.Join(";", frameStrings) + ";";
+                    //Console.WriteLine(templateString.Length);
                     // You can now use templateString as needed
 
                     using (var conn = new SqlConnection(connectionString))
@@ -463,7 +467,8 @@ namespace Recorder
                            // Console.WriteLine(" Seq = "+templateString);
                             insertCmd.Parameters.AddWithValue("@id", currId);
                             insertCmd.Parameters.AddWithValue("@name", hobba[i].UserName);
-                            insertCmd.Parameters.AddWithValue("@template", templateString);
+                            var param = insertCmd.Parameters.Add("@template", SqlDbType.NVarChar, -1);  // -1 = NVARCHAR(MAX)
+                            param.Value = templateString;
                             insertCmd.ExecuteNonQuery();
                            // Console.WriteLine("Data Inserted Succesfully!");
                         }                      
