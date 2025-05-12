@@ -36,6 +36,9 @@ namespace Recorder
             Name_box.ReadOnly = true;
             chart.SimpleMode = true;
             chart.AddWaveform("wave", Color.Green, 1, false);
+            width_label.Visible = false;
+            width_box.Visible = false;
+            function_box.SelectedIndex = 0;
             updateButtons();
         }
 
@@ -313,13 +316,18 @@ namespace Recorder
                     MessageBox.Show("Please record or load an audio first.");
                     return;
                 }
-
+                if ((function_box.Text == "Pruning(Path)" || function_box.Text == "Pruning(Cost)") && string.IsNullOrWhiteSpace(width_box.Text))
+                {
+                    MessageBox.Show("Please add the width first.");
+                    return;
+                }
                 var inputFrames = seq.Frames;
-
                 string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
                 string projectRoot = Directory.GetParent(baseDirectory).Parent.Parent.FullName;
                 string dbPath = Path.Combine(projectRoot, "GUI", "voice_enrollment_data.mdf");
-                string connectionString = $@"Data Source=(localdb)\MSSQLLocalDB;AttachDbFilename={dbPath};Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
+
+                string connectionString = $@"Data Source=(localdb)\MSSQLLocalDB;AttachDbFilename={dbPath};Integrated Security=True;Connect Timeout=30;";
+
                 var templates = new Dictionary<string, MFCCFrame[]>();
 
                 using (var conn = new SqlConnection(connectionString))
@@ -338,16 +346,51 @@ namespace Recorder
                     }
                 }
 
-                string bestMatch = DTW.MatchingVoicesTimeSync(inputFrames, templates);
+                string bestMatch = null;
+                double minDistance = double.PositiveInfinity;
+                double distance;               
+                foreach (var kvp in templates)
+                {
+                    string user = kvp.Key;
+                    MFCCFrame[] template = kvp.Value;
+                    if(function_box.Text == "DTW")
+                    {
+                        distance = DTW.MatchingVoices(inputFrames, template);
+                    }
+                    else if(function_box.Text == "DTW(Time Sync)")
+                    {                        
+                        // bestMatch = DTW.MatchingVoicesTimeSync(inputFrames, templates);
+                        distance = minDistance;
+                    }
+                    else if (function_box.Text == "Pruning(Cost)")
+                    {
+                        distance = Prunning.PruningLimitngPathCost(inputFrames, template , Convert.ToInt32(width_box.Text));
+                    }
+                    else if (function_box.Text == "Pruning(Path)")
+                    {
+                        distance = Prunning.PruningLimitngSearchPath(inputFrames, template, Convert.ToInt32(width_box.Text));
+                    }
+                    else
+                    {
+                        //Beam(Time sync) Code Here 
+                        distance = DTW.MatchingVoices(inputFrames, template);
+                    }
+                    if (distance < minDistance)
+                    {
+                        minDistance = distance;
+                        bestMatch = user;
+                    }
+                }
+
                 Name_box.Text = bestMatch ?? "No match found";
             }
             catch (Exception ex)
             {
                 Name_box.Text = "Error";
                 MessageBox.Show("Identification failed: " + ex.Message);
+
             }
         }
-
         private void btnRecord_Click_1(object sender, EventArgs e)
         {
             isRecorded = true;
@@ -399,7 +442,7 @@ namespace Recorder
             OpenFileDialog fileDialog = new OpenFileDialog();
             fileDialog.ShowDialog();
 
-            var hobba = TestcaseLoader.LoadTestcase2Testing(fileDialog.FileName);           
+            var hobba = TestcaseLoader.LoadTestcase1Testing(fileDialog.FileName);           
             string connectionString = $@"Data Source=(localdb)\MSSQLLocalDB;AttachDbFilename={dbPath};Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
             var templates = new Dictionary<string, MFCCFrame[]>();
             List<string> bestMatches= new List<string>();
@@ -415,10 +458,10 @@ namespace Recorder
                     {
                         string user = reader.GetString(0);
                         string templateString = reader.GetString(1);
-                        if (hobba.Any(h => h.UserName == user))
-                        {
-                            templates[user] = ParseTemplate(templateString);
-                        }
+                        //if (hobba.Any(h => h.UserName == user))
+                        
+                        templates[user] = ParseTemplate(templateString);
+                        
                     }
                 }
             }
@@ -428,25 +471,43 @@ namespace Recorder
                 for (int k = 0; k < hobba[i].UserTemplates.Count; k++)
                 {
                     //Console.WriteLine("In Function = "+hobba[i].UserTemplates.Count);
-                    seq = AudioOperations.ExtractFeatures(hobba[i].UserTemplates[k]);
-                    double min = double.PositiveInfinity;
-                    string bestMatch = "";
-                    foreach (var kvp in templates)
-                    {
-                        string templateUser = kvp.Key;
-                        MFCCFrame[] templateSeq = kvp.Value;
+                    Console.WriteLine($"Test #{i}-{k} for User {hobba[i].UserName}");
 
-                        double distance = DTW.MatchingVoices(seq.Frames, templateSeq);
-                        if (distance < min)
+                    seq = AudioOperations.ExtractFeatures(hobba[i].UserTemplates[k]);
+                    //if (seq.Frames.Any(f => f.Features.Any(feat => double.IsNaN(feat) || double.IsInfinity(feat))))
+                                           
+                        double min = double.PositiveInfinity;
+                        string bestMatch = "";
+                        foreach (var kvp in templates)
                         {
-                            min = distance;
-                            bestMatch = templateUser;
+                            string templateUser = kvp.Key;
+                            MFCCFrame[] templateSeq = kvp.Value;
+
+                            double distance = DTW.MatchingVoices(seq.Frames, templateSeq);                            
+                            if (distance < min)
+                            {
+                                min = distance;
+                                bestMatch = templateUser;
+                            }
                         }
+                        bestMatches.Add(bestMatch);                       
+                        Console.WriteLine($"Test sample {i}-{k} best matched: {bestMatch}");
                     }
-                    bestMatches.Add(bestMatch);
-                    Console.WriteLine(bestMatch);
-                }
-            }            
+                
+            }    
+            double acc = TestcaseLoader.CheckTestcaseAccuracy(hobba,bestMatches);
+            Console.WriteLine("Accuracy = " + acc);
+        }
+
+        private void function_box_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            width_label.Visible = false;
+            width_box.Visible = false;
+            if(function_box.Text == "Pruning(Path)" || function_box.Text == "Pruning(Cost)")
+            {
+                width_label.Visible = true;
+                width_box.Visible = true;
+            }
         }
     }
 }

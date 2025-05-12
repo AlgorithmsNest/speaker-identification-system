@@ -43,10 +43,14 @@
             this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.closeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.trackBar1 = new System.Windows.Forms.TrackBar();
-            this.button1 = new System.Windows.Forms.Button();
             this.optionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.loadTrain1ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.trackBar1 = new System.Windows.Forms.TrackBar();
+            this.button1 = new System.Windows.Forms.Button();
+            this.function_box = new System.Windows.Forms.ComboBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.width_label = new System.Windows.Forms.Label();
+            this.width_box = new System.Windows.Forms.TextBox();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).BeginInit();
             this.SuspendLayout();
@@ -165,7 +169,7 @@
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Padding = new System.Windows.Forms.Padding(5, 2, 0, 2);
-            this.menuStrip1.Size = new System.Drawing.Size(389, 28);
+            this.menuStrip1.Size = new System.Drawing.Size(553, 28);
             this.menuStrip1.TabIndex = 11;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -197,6 +201,21 @@
             this.closeToolStripMenuItem.Size = new System.Drawing.Size(128, 26);
             this.closeToolStripMenuItem.Text = "Close";
             // 
+            // optionsToolStripMenuItem
+            // 
+            this.optionsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.loadTrain1ToolStripMenuItem});
+            this.optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
+            this.optionsToolStripMenuItem.Size = new System.Drawing.Size(49, 24);
+            this.optionsToolStripMenuItem.Text = "Edit";
+            // 
+            // loadTrain1ToolStripMenuItem
+            // 
+            this.loadTrain1ToolStripMenuItem.Name = "loadTrain1ToolStripMenuItem";
+            this.loadTrain1ToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.loadTrain1ToolStripMenuItem.Text = "Load Test1";
+            this.loadTrain1ToolStripMenuItem.Click += new System.EventHandler(this.loadTrain1ToolStripMenuItem_Click_1);
+            // 
             // trackBar1
             // 
             this.trackBar1.Location = new System.Drawing.Point(3, 90);
@@ -217,26 +236,56 @@
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
-            // optionsToolStripMenuItem
+            // function_box
             // 
-            this.optionsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.loadTrain1ToolStripMenuItem});
-            this.optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
-            this.optionsToolStripMenuItem.Size = new System.Drawing.Size(49, 24);
-            this.optionsToolStripMenuItem.Text = "Edit";
+            this.function_box.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.function_box.FormattingEnabled = true;
+            this.function_box.Items.AddRange(new object[] {
+            "DTW",
+            "DTW(Time Sync)",
+            "Pruning(Cost)",
+            "Pruning(Path)",
+            "Beam(Time sync)"});
+            this.function_box.Location = new System.Drawing.Point(402, 143);
+            this.function_box.Name = "function_box";
+            this.function_box.Size = new System.Drawing.Size(121, 24);
+            this.function_box.TabIndex = 24;
+            this.function_box.SelectedIndexChanged += new System.EventHandler(this.function_box_SelectedIndexChanged);
             // 
-            // loadTrain1ToolStripMenuItem
+            // label1
             // 
-            this.loadTrain1ToolStripMenuItem.Name = "loadTrain1ToolStripMenuItem";
-            this.loadTrain1ToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
-            this.loadTrain1ToolStripMenuItem.Text = "Load Test1";
-            this.loadTrain1ToolStripMenuItem.Click += new System.EventHandler(this.loadTrain1ToolStripMenuItem_Click_1);
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(440, 113);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(57, 16);
+            this.label1.TabIndex = 25;
+            this.label1.Text = "Function";
+            // 
+            // width_label
+            // 
+            this.width_label.AutoSize = true;
+            this.width_label.Location = new System.Drawing.Point(399, 191);
+            this.width_label.Name = "width_label";
+            this.width_label.Size = new System.Drawing.Size(41, 16);
+            this.width_label.TabIndex = 26;
+            this.width_label.Text = "Width";
+            // 
+            // width_box
+            // 
+            this.width_box.Location = new System.Drawing.Point(443, 188);
+            this.width_box.Name = "width_box";
+            this.width_box.Size = new System.Drawing.Size(98, 22);
+            this.width_box.TabIndex = 27;
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(389, 222);
+            this.ClientSize = new System.Drawing.Size(553, 222);
+            this.Controls.Add(this.width_box);
+            this.Controls.Add(this.width_label);
+            this.Controls.Add(this.label1);
+            this.Controls.Add(this.function_box);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.Name_box);
             this.Controls.Add(this.Name_label);
@@ -280,5 +329,9 @@
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.ToolStripMenuItem optionsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem loadTrain1ToolStripMenuItem;
+        private System.Windows.Forms.ComboBox function_box;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label width_label;
+        private System.Windows.Forms.TextBox width_box;
     }
 }
