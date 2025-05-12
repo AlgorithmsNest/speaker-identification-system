@@ -19,5 +19,6 @@
 
 #Data Base and Test Cases
 *.wav
-
+*.mdf
+*.ldf
 
