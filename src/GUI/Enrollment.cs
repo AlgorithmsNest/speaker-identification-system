@@ -368,15 +368,16 @@ namespace Recorder
                     for (int i = 0; i < seq.Frames.Length; i++)
                         features[i] = seq.Frames[i].Features;
 
+                    List<string> frameStrings = new List<string>();
 
-                    string templateString ="";
-                    for (int i = 0; i < features.Length; i++)
+                    for (int x = 0; x < features.Length; x++)
                     {
-                        string frame = string.Join(",", features[i]);
-                       templateString += frame + ";";
+                        frameStrings.Add(string.Join(",", features[x]));
+                        // Console.WriteLine(templateString);
                     }
-                   
-                    
+                    string templateString = string.Join(";", frameStrings) + ";";
+
+
                     string insertSql = "INSERT INTO voice_templates  (user_id, user_name, template_sequence) VALUES (@id, @name, @template)";
                     using (var insertCmd = new SqlCommand(insertSql, conn))
                     {                       
@@ -400,7 +401,7 @@ namespace Recorder
             OpenFileDialog fileDialog = new OpenFileDialog();
             fileDialog.ShowDialog();
 
-            var hobba = TestcaseLoader.LoadTestcase2Training(fileDialog.FileName);
+            var hobba = TestcaseLoader.LoadTestcase1Training(fileDialog.FileName);
             string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
             string projectRoot = Directory.GetParent(baseDirectory).Parent.Parent.FullName;
             string dbPath = Path.Combine(projectRoot, "GUI", "voice_enrollment_data.mdf");
