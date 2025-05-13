@@ -4,10 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-<<<<<<< HEAD
-=======
 using System.Diagnostics;
->>>>>>> 29c4b1c8c70fbe4a195fdf5cc8bd0931abdc4f5b
 
 namespace Recorder
 {
@@ -46,11 +43,7 @@ namespace Recorder
         }
 
 
-<<<<<<< HEAD
-        public static double MatchingVoices(MFCCFrame[] input, MFCCFrame[] template)
-=======
         public static double DynamicTimeWarping(MFCCFrame[] input, MFCCFrame[] template)
->>>>>>> 29c4b1c8c70fbe4a195fdf5cc8bd0931abdc4f5b
         {
             if (input.Length == 0 || template.Length == 0)
                 return double.PositiveInfinity;
@@ -89,8 +82,6 @@ namespace Recorder
             return prev[templateLen] / Math.Max(inputLen, templateLen);
         }
 
-<<<<<<< HEAD
-=======
 
         public static string MatchingWithTemplatesDTW(MFCCFrame[] inputFrames, Dictionary<string, MFCCFrame[]> templates)
         {
@@ -118,7 +109,6 @@ namespace Recorder
             return bestMatch;
         }
 
->>>>>>> 29c4b1c8c70fbe4a195fdf5cc8bd0931abdc4f5b
     }
     public static class Prunning
     {
@@ -274,8 +264,6 @@ namespace Recorder
 
         }
 
-<<<<<<< HEAD
-=======
 
         public static string PruningMatchingSearchPath(MFCCFrame[] inputFrames, Dictionary<string, MFCCFrame[]> templates,int width)
         {
@@ -342,6 +330,5 @@ namespace Recorder
             // soon 
             return true;
         }
->>>>>>> 29c4b1c8c70fbe4a195fdf5cc8bd0931abdc4f5b
     }
 } ///////
