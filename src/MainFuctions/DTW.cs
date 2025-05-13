@@ -4,6 +4,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+<<<<<<< HEAD
+=======
+using System.Diagnostics;
+>>>>>>> 29c4b1c8c70fbe4a195fdf5cc8bd0931abdc4f5b
 
 namespace Recorder
 {
@@ -42,7 +46,11 @@ namespace Recorder
         }
 
 
+<<<<<<< HEAD
         public static double MatchingVoices(MFCCFrame[] input, MFCCFrame[] template)
+=======
+        public static double DynamicTimeWarping(MFCCFrame[] input, MFCCFrame[] template)
+>>>>>>> 29c4b1c8c70fbe4a195fdf5cc8bd0931abdc4f5b
         {
             if (input.Length == 0 || template.Length == 0)
                 return double.PositiveInfinity;
@@ -81,6 +89,36 @@ namespace Recorder
             return prev[templateLen] / Math.Max(inputLen, templateLen);
         }
 
+<<<<<<< HEAD
+=======
+
+        public static string MatchingWithTemplatesDTW(MFCCFrame[] inputFrames, Dictionary<string, MFCCFrame[]> templates)
+        {
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+
+            string bestMatch = null;
+            double minDistance = double.PositiveInfinity;
+            double distance;
+
+            foreach (var kvp in templates)
+            {
+                string user = kvp.Key;
+                MFCCFrame[] template = kvp.Value;
+                distance = DynamicTimeWarping(inputFrames, template);
+                if (distance < minDistance)
+                {
+                    minDistance = distance;
+                    bestMatch = user;
+                }
+
+            }
+            Console.WriteLine("Normal DTW--- Elapsed Time in ms: " + stopwatch.ElapsedMilliseconds + " ms");
+            Console.WriteLine("Normal DTW--- Elapsed Time in sec: " + stopwatch.Elapsed.TotalSeconds + " s");
+            return bestMatch;
+        }
+
+>>>>>>> 29c4b1c8c70fbe4a195fdf5cc8bd0931abdc4f5b
     }
     public static class Prunning
     {
@@ -236,5 +274,74 @@ namespace Recorder
 
         }
 
+<<<<<<< HEAD
+=======
+
+        public static string PruningMatchingSearchPath(MFCCFrame[] inputFrames, Dictionary<string, MFCCFrame[]> templates,int width)
+        {
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+
+            string bestMatch = null;
+            double minDistance = double.PositiveInfinity;
+            double distance;
+
+            foreach (var kvp in templates)
+            {
+                string user = kvp.Key;
+                MFCCFrame[] template = kvp.Value;
+                distance = PruningLimitngPathCost(inputFrames, template,width);
+                if (distance < minDistance)
+                {
+                    minDistance = distance;
+                    bestMatch = user;
+                }
+
+            }
+            stopwatch.Stop();
+            Console.WriteLine("Pruning Search Path--- Elapsed Time in ms: " + stopwatch.ElapsedMilliseconds + " ms");
+            Console.WriteLine("Pruning Search Path--- Elapsed Time in sec: " + stopwatch.Elapsed.TotalSeconds + " s");
+            return bestMatch;
+        }
+
+        public static string PruningMatchingPathCost(MFCCFrame[] inputFrames, Dictionary<string, MFCCFrame[]> templates,int beam_width)
+        {
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+
+            string bestMatch = null;
+            double minDistance = double.PositiveInfinity;
+            double distance;
+
+            foreach (var kvp in templates)
+            {
+                string user = kvp.Key;
+                MFCCFrame[] template = kvp.Value;
+                distance = PruningLimitngPathCost(inputFrames, template, beam_width);
+                if (distance < minDistance)
+                {
+                    minDistance = distance;
+                    bestMatch = user;
+                }
+
+            }
+            stopwatch.Stop();
+            Console.WriteLine("Pruning Path Cost--- Elapsed Time in ms: " + stopwatch.ElapsedMilliseconds + " ms");
+            Console.WriteLine("Pruning Path Cost--- Elapsed Time in sec: " + stopwatch.Elapsed.TotalSeconds + " s");
+            return bestMatch;
+        }
+
+        public static bool checkValidWidthSearchPath(MFCCFrame[] inputFrames, MFCCFrame[] template)
+        {
+            // soon 
+            return true;
+        }
+
+        public static bool checkValidWidthPathCost(MFCCFrame[] inputFrames, MFCCFrame[] template)
+        {
+            // soon 
+            return true;
+        }
+>>>>>>> 29c4b1c8c70fbe4a195fdf5cc8bd0931abdc4f5b
     }
 } ///////

@@ -212,7 +212,11 @@
             // loadTrain1ToolStripMenuItem
             // 
             this.loadTrain1ToolStripMenuItem.Name = "loadTrain1ToolStripMenuItem";
+<<<<<<< HEAD
             this.loadTrain1ToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+=======
+            this.loadTrain1ToolStripMenuItem.Size = new System.Drawing.Size(163, 26);
+>>>>>>> 29c4b1c8c70fbe4a195fdf5cc8bd0931abdc4f5b
             this.loadTrain1ToolStripMenuItem.Text = "Load Test1";
             this.loadTrain1ToolStripMenuItem.Click += new System.EventHandler(this.loadTrain1ToolStripMenuItem_Click_1);
             // 
@@ -243,8 +247,13 @@
             this.function_box.Items.AddRange(new object[] {
             "DTW",
             "DTW(Time Sync)",
+<<<<<<< HEAD
             "Pruning(Cost)",
             "Pruning(Path)",
+=======
+            "Pruning(Search Path)",
+            "Pruning(Path cost)",
+>>>>>>> 29c4b1c8c70fbe4a195fdf5cc8bd0931abdc4f5b
             "Beam(Time sync)"});
             this.function_box.Location = new System.Drawing.Point(402, 143);
             this.function_box.Name = "function_box";

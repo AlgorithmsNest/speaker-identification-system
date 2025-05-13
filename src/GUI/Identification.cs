@@ -316,7 +316,11 @@ namespace Recorder
                     MessageBox.Show("Please record or load an audio first.");
                     return;
                 }
+<<<<<<< HEAD
                 if ((function_box.Text == "Pruning(Path)" || function_box.Text == "Pruning(Cost)") && string.IsNullOrWhiteSpace(width_box.Text))
+=======
+                if ((function_box.Text == "Pruning(Search Path)" || function_box.Text == "Pruning(Path cost)") && string.IsNullOrWhiteSpace(width_box.Text))
+>>>>>>> 29c4b1c8c70fbe4a195fdf5cc8bd0931abdc4f5b
                 {
                     MessageBox.Show("Please add the width first.");
                     return;
@@ -345,6 +349,7 @@ namespace Recorder
                         }
                     }
                 }
+<<<<<<< HEAD
 
                 string bestMatch = null;
                 double minDistance = double.PositiveInfinity;
@@ -381,6 +386,33 @@ namespace Recorder
                         bestMatch = user;
                     }
                 }
+=======
+                string bestMatch = null;
+                if (function_box.Text == "DTW")
+                {
+                    bestMatch = DTW.MatchingWithTemplatesDTW(inputFrames, templates);
+                }
+                else if (function_box.Text == "DTW(Time Sync)")
+                {
+                    // soon
+                    bestMatch = DTW.MatchingWithTemplatesDTW(inputFrames, templates);
+                    //best_match = minDistance;
+                }
+                else if (function_box.Text == "Pruning(Path cost)")
+                {
+                    bestMatch = Prunning.PruningMatchingPathCost(inputFrames, templates, Convert.ToInt32(width_box.Text));
+                }
+                else if (function_box.Text == "Pruning(Search Path)")
+                {
+                    bestMatch = Prunning.PruningMatchingSearchPath(inputFrames, templates, Convert.ToInt32(width_box.Text));
+                }
+                else
+                {
+                    // soon
+                    //Beam(Time sync) Code Here 
+                    bestMatch = DTW.MatchingWithTemplatesDTW(inputFrames, templates);
+                }        
+>>>>>>> 29c4b1c8c70fbe4a195fdf5cc8bd0931abdc4f5b
 
                 Name_box.Text = bestMatch ?? "No match found";
             }
@@ -475,6 +507,7 @@ namespace Recorder
 
                     seq = AudioOperations.ExtractFeatures(hobba[i].UserTemplates[k]);
                     //if (seq.Frames.Any(f => f.Features.Any(feat => double.IsNaN(feat) || double.IsInfinity(feat))))
+<<<<<<< HEAD
                                            
                         double min = double.PositiveInfinity;
                         string bestMatch = "";
@@ -493,6 +526,29 @@ namespace Recorder
                         bestMatches.Add(bestMatch);                       
                         Console.WriteLine($"Test sample {i}-{k} best matched: {bestMatch}");
                     }
+=======
+
+                    string bestMatch = DTW.MatchingWithTemplatesDTW(seq.Frames, templates);
+                    /*double min = double.PositiveInfinity;
+                    string bestMatch = "";
+                    foreach (var kvp in templates)
+                    {
+                        string templateUser = kvp.Key;
+                        MFCCFrame[] templateSeq = kvp.Value;
+
+                        double distance = DTW.MatchingVoices(seq.Frames, templateSeq);                            
+                        if (distance < min)
+                        {
+                            min = distance;
+                            bestMatch = templateUser;
+                        }
+                    }*/
+                    bestMatches.Add(bestMatch);                       
+                    Console.WriteLine($"Test sample {i}-{k} best matched: {bestMatch}");
+                
+                
+                }
+>>>>>>> 29c4b1c8c70fbe4a195fdf5cc8bd0931abdc4f5b
                 
             }    
             double acc = TestcaseLoader.CheckTestcaseAccuracy(hobba,bestMatches);
@@ -503,7 +559,11 @@ namespace Recorder
         {
             width_label.Visible = false;
             width_box.Visible = false;
+<<<<<<< HEAD
             if(function_box.Text == "Pruning(Path)" || function_box.Text == "Pruning(Cost)")
+=======
+            if(function_box.Text == "Pruning(Search Path)" || function_box.Text == "Pruning(Path cost)")
+>>>>>>> 29c4b1c8c70fbe4a195fdf5cc8bd0931abdc4f5b
             {
                 width_label.Visible = true;
                 width_box.Visible = true;
