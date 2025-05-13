@@ -419,7 +419,7 @@ namespace Recorder
                                 INSERT INTO voice_enrollment_final (user_name) 
                                 VALUES (@Username); 
                                 SELECT SCOPE_IDENTITY();";
-                for (int i = 0; i < hobba.Count; i++)
+            for (int i = 0; i < hobba.Count; i++)
             {
                 //var hobba[i] = hobba[i];
                 for (int k = 0; k < hobba[i].UserTemplates.Count; k++)
