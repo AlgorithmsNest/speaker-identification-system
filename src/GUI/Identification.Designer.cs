@@ -212,7 +212,7 @@
             // loadTrain1ToolStripMenuItem
             // 
             this.loadTrain1ToolStripMenuItem.Name = "loadTrain1ToolStripMenuItem";
-            this.loadTrain1ToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.loadTrain1ToolStripMenuItem.Size = new System.Drawing.Size(163, 26);
             this.loadTrain1ToolStripMenuItem.Text = "Load Test1";
             this.loadTrain1ToolStripMenuItem.Click += new System.EventHandler(this.loadTrain1ToolStripMenuItem_Click_1);
             // 
@@ -243,8 +243,8 @@
             this.function_box.Items.AddRange(new object[] {
             "DTW",
             "DTW(Time Sync)",
-            "Pruning(Cost)",
-            "Pruning(Path)",
+            "Pruning(Search Path)",
+            "Pruning(Path cost)",
             "Beam(Time sync)"});
             this.function_box.Location = new System.Drawing.Point(402, 143);
             this.function_box.Name = "function_box";

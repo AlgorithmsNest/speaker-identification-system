@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Diagnostics;
 
 namespace Recorder
 {
@@ -42,7 +43,7 @@ namespace Recorder
         }
 
 
-        public static double MatchingVoices(MFCCFrame[] input, MFCCFrame[] template)
+        public static double DynamicTimeWarping(MFCCFrame[] input, MFCCFrame[] template)
         {
             if (input.Length == 0 || template.Length == 0)
                 return double.PositiveInfinity;
@@ -79,6 +80,33 @@ namespace Recorder
             }
 
             return prev[templateLen] / Math.Max(inputLen, templateLen);
+        }
+
+
+        public static string MatchingWithTemplatesDTW(MFCCFrame[] inputFrames, Dictionary<string, MFCCFrame[]> templates)
+        {
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+
+            string bestMatch = null;
+            double minDistance = double.PositiveInfinity;
+            double distance;
+
+            foreach (var kvp in templates)
+            {
+                string user = kvp.Key;
+                MFCCFrame[] template = kvp.Value;
+                distance = DynamicTimeWarping(inputFrames, template);
+                if (distance < minDistance)
+                {
+                    minDistance = distance;
+                    bestMatch = user;
+                }
+
+            }
+            Console.WriteLine("Normal DTW--- Elapsed Time in ms: " + stopwatch.ElapsedMilliseconds + " ms");
+            Console.WriteLine("Normal DTW--- Elapsed Time in sec: " + stopwatch.Elapsed.TotalSeconds + " s");
+            return bestMatch;
         }
 
     }
@@ -236,5 +264,71 @@ namespace Recorder
 
         }
 
+
+        public static string PruningMatchingSearchPath(MFCCFrame[] inputFrames, Dictionary<string, MFCCFrame[]> templates,int width)
+        {
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+
+            string bestMatch = null;
+            double minDistance = double.PositiveInfinity;
+            double distance;
+
+            foreach (var kvp in templates)
+            {
+                string user = kvp.Key;
+                MFCCFrame[] template = kvp.Value;
+                distance = PruningLimitngPathCost(inputFrames, template,width);
+                if (distance < minDistance)
+                {
+                    minDistance = distance;
+                    bestMatch = user;
+                }
+
+            }
+            stopwatch.Stop();
+            Console.WriteLine("Pruning Search Path--- Elapsed Time in ms: " + stopwatch.ElapsedMilliseconds + " ms");
+            Console.WriteLine("Pruning Search Path--- Elapsed Time in sec: " + stopwatch.Elapsed.TotalSeconds + " s");
+            return bestMatch;
+        }
+
+        public static string PruningMatchingPathCost(MFCCFrame[] inputFrames, Dictionary<string, MFCCFrame[]> templates,int beam_width)
+        {
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+
+            string bestMatch = null;
+            double minDistance = double.PositiveInfinity;
+            double distance;
+
+            foreach (var kvp in templates)
+            {
+                string user = kvp.Key;
+                MFCCFrame[] template = kvp.Value;
+                distance = PruningLimitngPathCost(inputFrames, template, beam_width);
+                if (distance < minDistance)
+                {
+                    minDistance = distance;
+                    bestMatch = user;
+                }
+
+            }
+            stopwatch.Stop();
+            Console.WriteLine("Pruning Path Cost--- Elapsed Time in ms: " + stopwatch.ElapsedMilliseconds + " ms");
+            Console.WriteLine("Pruning Path Cost--- Elapsed Time in sec: " + stopwatch.Elapsed.TotalSeconds + " s");
+            return bestMatch;
+        }
+
+        public static bool checkValidWidthSearchPath(MFCCFrame[] inputFrames, MFCCFrame[] template)
+        {
+            // soon 
+            return true;
+        }
+
+        public static bool checkValidWidthPathCost(MFCCFrame[] inputFrames, MFCCFrame[] template)
+        {
+            // soon 
+            return true;
+        }
     }
 } ///////

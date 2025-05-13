@@ -316,7 +316,7 @@ namespace Recorder
                     MessageBox.Show("Please record or load an audio first.");
                     return;
                 }
-                if ((function_box.Text == "Pruning(Path)" || function_box.Text == "Pruning(Cost)") && string.IsNullOrWhiteSpace(width_box.Text))
+                if ((function_box.Text == "Pruning(Search Path)" || function_box.Text == "Pruning(Path cost)") && string.IsNullOrWhiteSpace(width_box.Text))
                 {
                     MessageBox.Show("Please add the width first.");
                     return;
@@ -345,42 +345,31 @@ namespace Recorder
                         }
                     }
                 }
-
                 string bestMatch = null;
-                double minDistance = double.PositiveInfinity;
-                double distance;               
-                foreach (var kvp in templates)
+                if (function_box.Text == "DTW")
                 {
-                    string user = kvp.Key;
-                    MFCCFrame[] template = kvp.Value;
-                    if(function_box.Text == "DTW")
-                    {
-                        distance = DTW.MatchingVoices(inputFrames, template);
-                    }
-                    else if(function_box.Text == "DTW(Time Sync)")
-                    {                        
-                        // bestMatch = DTW.MatchingVoicesTimeSync(inputFrames, templates);
-                        distance = minDistance;
-                    }
-                    else if (function_box.Text == "Pruning(Cost)")
-                    {
-                        distance = Prunning.PruningLimitngPathCost(inputFrames, template , Convert.ToInt32(width_box.Text));
-                    }
-                    else if (function_box.Text == "Pruning(Path)")
-                    {
-                        distance = Prunning.PruningLimitngSearchPath(inputFrames, template, Convert.ToInt32(width_box.Text));
-                    }
-                    else
-                    {
-                        //Beam(Time sync) Code Here 
-                        distance = DTW.MatchingVoices(inputFrames, template);
-                    }
-                    if (distance < minDistance)
-                    {
-                        minDistance = distance;
-                        bestMatch = user;
-                    }
+                    bestMatch = DTW.MatchingWithTemplatesDTW(inputFrames, templates);
                 }
+                else if (function_box.Text == "DTW(Time Sync)")
+                {
+                    // soon
+                    bestMatch = DTW.MatchingWithTemplatesDTW(inputFrames, templates);
+                    //best_match = minDistance;
+                }
+                else if (function_box.Text == "Pruning(Path cost)")
+                {
+                    bestMatch = Prunning.PruningMatchingPathCost(inputFrames, templates, Convert.ToInt32(width_box.Text));
+                }
+                else if (function_box.Text == "Pruning(Search Path)")
+                {
+                    bestMatch = Prunning.PruningMatchingSearchPath(inputFrames, templates, Convert.ToInt32(width_box.Text));
+                }
+                else
+                {
+                    // soon
+                    //Beam(Time sync) Code Here 
+                    bestMatch = DTW.MatchingWithTemplatesDTW(inputFrames, templates);
+                }        
 
                 Name_box.Text = bestMatch ?? "No match found";
             }
@@ -475,24 +464,27 @@ namespace Recorder
 
                     seq = AudioOperations.ExtractFeatures(hobba[i].UserTemplates[k]);
                     //if (seq.Frames.Any(f => f.Features.Any(feat => double.IsNaN(feat) || double.IsInfinity(feat))))
-                                           
-                        double min = double.PositiveInfinity;
-                        string bestMatch = "";
-                        foreach (var kvp in templates)
-                        {
-                            string templateUser = kvp.Key;
-                            MFCCFrame[] templateSeq = kvp.Value;
 
-                            double distance = DTW.MatchingVoices(seq.Frames, templateSeq);                            
-                            if (distance < min)
-                            {
-                                min = distance;
-                                bestMatch = templateUser;
-                            }
+                    string bestMatch = DTW.MatchingWithTemplatesDTW(seq.Frames, templates);
+                    /*double min = double.PositiveInfinity;
+                    string bestMatch = "";
+                    foreach (var kvp in templates)
+                    {
+                        string templateUser = kvp.Key;
+                        MFCCFrame[] templateSeq = kvp.Value;
+
+                        double distance = DTW.MatchingVoices(seq.Frames, templateSeq);                            
+                        if (distance < min)
+                        {
+                            min = distance;
+                            bestMatch = templateUser;
                         }
-                        bestMatches.Add(bestMatch);                       
-                        Console.WriteLine($"Test sample {i}-{k} best matched: {bestMatch}");
-                    }
+                    }*/
+                    bestMatches.Add(bestMatch);                       
+                    Console.WriteLine($"Test sample {i}-{k} best matched: {bestMatch}");
+                
+                
+                }
                 
             }    
             double acc = TestcaseLoader.CheckTestcaseAccuracy(hobba,bestMatches);
@@ -503,7 +495,7 @@ namespace Recorder
         {
             width_label.Visible = false;
             width_box.Visible = false;
-            if(function_box.Text == "Pruning(Path)" || function_box.Text == "Pruning(Cost)")
+            if(function_box.Text == "Pruning(Search Path)" || function_box.Text == "Pruning(Path cost)")
             {
                 width_label.Visible = true;
                 width_box.Visible = true;
