@@ -40,7 +40,7 @@ namespace Recorder
 
         private bool isRecorded;
         private bool isSaved;
-       
+        private string connectionString;
         private string username_text;
         private int id;
         private int currId;
@@ -51,7 +51,18 @@ namespace Recorder
             //Your project solution path////////////////
             username_text=username;
             id=userId;
-
+            string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            string projectRoot = Directory.GetParent(baseDirectory).Parent.Parent.FullName;
+            string trimmedRoot = projectRoot;
+            if (Path.GetFileName(projectRoot).Equals("bin", StringComparison.OrdinalIgnoreCase))
+            {
+                trimmedRoot = Directory.GetParent(projectRoot).FullName;
+            }
+            //Release Path
+            string dbPath = Path.Combine(trimmedRoot, "GUI", "voice_enrollment_data.mdf");
+            //Debug Path
+            //string dbPath = Path.Combine(projectRoot,"GUI","voice_enrollment_data.mdf");
+            connectionString = $@"Data Source=(localdb)\MSSQLLocalDB;AttachDbFilename={dbPath};Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
 
             // Configure the wavechart
             chart.SimpleMode = true;
@@ -85,6 +96,7 @@ namespace Recorder
                 this.decoder.Seek(trackBar1.Value);
             trackBar1.Maximum = this.decoder.samples;
             this.decoder.Start();
+            
             updateButtons();
         }
 
@@ -331,14 +343,7 @@ namespace Recorder
         {
             if ((this.encoder != null || this.decoder != null) && !string.IsNullOrWhiteSpace(username_text) && isSaved)
             {
-                //Dynamic Path
-                string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-                string projectRoot = Directory.GetParent(baseDirectory).Parent.Parent.FullName;
-                string dbPath = Path.Combine(projectRoot, "GUI", "voice_enrollment_data.mdf");
-                
-                string connectionString = $@"Data Source=(localdb)\MSSQLLocalDB;AttachDbFilename={dbPath};Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
-
-
+                //Dynamic Path                             
                 using (var conn = new SqlConnection(connectionString))
                 {
                     conn.Open();
@@ -402,12 +407,19 @@ namespace Recorder
             fileDialog.ShowDialog();
 
             var hobba = TestcaseLoader.LoadTestcase1Training(fileDialog.FileName);
-            string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-            string projectRoot = Directory.GetParent(baseDirectory).Parent.Parent.FullName;
-            string dbPath = Path.Combine(projectRoot, "GUI", "voice_enrollment_data.mdf");
-            //Console.WriteLine(hobba.Count);
-            string connectionString = $@"Data Source=(localdb)\MSSQLLocalDB;AttachDbFilename={dbPath};Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
-            for (int i = 0; i < hobba.Count; i++)
+            
+            
+            
+            using (var conn = new SqlConnection(connectionString))
+            {
+                conn.Open();
+                string insertSql = "INSERT INTO voice_templates  (user_id, user_name, template_sequence) VALUES (@id, @name, @template)";
+                string checkQuery = @"SELECT COUNT(*) FROM voice_enrollment_final WHERE user_name = @Username";
+                string query2 = @"
+                                INSERT INTO voice_enrollment_final (user_name) 
+                                VALUES (@Username); 
+                                SELECT SCOPE_IDENTITY();";
+                for (int i = 0; i < hobba.Count; i++)
             {
                 //var hobba[i] = hobba[i];
                 for (int k = 0; k < hobba[i].UserTemplates.Count; k++)
@@ -433,15 +445,7 @@ namespace Recorder
                     //Console.WriteLine(templateString.Length);
                     // You can now use templateString as needed
 
-                    using (var conn = new SqlConnection(connectionString))
-                    {
-                        conn.Open();
-                        string insertSql = "INSERT INTO voice_templates  (user_id, user_name, template_sequence) VALUES (@id, @name, @template)";
-                        string checkQuery = @"SELECT COUNT(*) FROM voice_enrollment_final WHERE user_name = @Username";
-                        string query2 = @"
-                                INSERT INTO voice_enrollment_final (user_name) 
-                                VALUES (@Username); 
-                                SELECT SCOPE_IDENTITY();";
+                    
                        // string selectQuery = "SELECT template_sequence FROM voice_templates WHERE user_name = @userName ORDER BY user_id DESC";
                         using (SqlCommand checkCmd = new SqlCommand(checkQuery, conn))
                         {
@@ -475,6 +479,7 @@ namespace Recorder
                         }                      
                     }
                 }
+                conn.Close();
             }
             Console.WriteLine("Completely Done!");
         }

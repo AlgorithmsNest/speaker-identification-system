@@ -243,8 +243,6 @@
             this.function_box.Items.AddRange(new object[] {
             "DTW",
             "DTW(Time Sync)",
-            "Pruning(Search Path)",
-            "Pruning(Path cost)",
             "Beam(Time sync)"});
             this.function_box.Location = new System.Drawing.Point(402, 143);
             this.function_box.Name = "function_box";

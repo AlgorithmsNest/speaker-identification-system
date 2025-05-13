@@ -27,7 +27,7 @@ namespace Recorder
 
         private Encoder encoder;
         private Decoder decoder;
-
+        private string connectionString;
         private bool isRecorded;
         private bool isSaved;
         public Form1()
@@ -39,6 +39,19 @@ namespace Recorder
             width_label.Visible = false;
             width_box.Visible = false;
             function_box.SelectedIndex = 0;
+            string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            string projectRoot = Directory.GetParent(baseDirectory).Parent.Parent.FullName;
+            string trimmedRoot = projectRoot;
+            if (Path.GetFileName(projectRoot).Equals("bin", StringComparison.OrdinalIgnoreCase))
+            {
+                trimmedRoot = Directory.GetParent(projectRoot).FullName;
+            }
+            //Release Path
+            string dbPath = Path.Combine(trimmedRoot, "GUI", "voice_enrollment_data.mdf");
+            //Debug Path
+            //string dbPath = Path.Combine(projectRoot,"GUI","voice_enrollment_data.mdf");
+
+            connectionString = $@"Data Source=(localdb)\MSSQLLocalDB;AttachDbFilename={dbPath};Integrated Security=True;Connect Timeout=30;";
             updateButtons();
         }
 
@@ -63,6 +76,7 @@ namespace Recorder
                 this.decoder.Seek(trackBar1.Value);
             trackBar1.Maximum = this.decoder.samples;
             this.decoder.Start();
+            
             updateButtons();
         }
 
@@ -322,11 +336,7 @@ namespace Recorder
                     return;
                 }
                 var inputFrames = seq.Frames;
-                string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-                string projectRoot = Directory.GetParent(baseDirectory).Parent.Parent.FullName;
-                string dbPath = Path.Combine(projectRoot, "GUI", "voice_enrollment_data.mdf");
-
-                string connectionString = $@"Data Source=(localdb)\MSSQLLocalDB;AttachDbFilename={dbPath};Integrated Security=True;Connect Timeout=30;";
+                
 
                 var templates = new Dictionary<string, MFCCFrame[]>();
 
@@ -345,6 +355,7 @@ namespace Recorder
                         }
                     }
                 }
+
                 string bestMatch = null;
                 if (function_box.Text == "DTW")
                 {
@@ -425,17 +436,19 @@ namespace Recorder
 
         private void loadTrain1ToolStripMenuItem_Click_1(object sender, EventArgs e)
         {
-            string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-            string projectRoot = Directory.GetParent(baseDirectory).Parent.Parent.FullName;
-            string dbPath = Path.Combine(projectRoot, "GUI", "voice_enrollment_data.mdf");
+            
             OpenFileDialog fileDialog = new OpenFileDialog();
             fileDialog.ShowDialog();
 
             var hobba = TestcaseLoader.LoadTestcase1Testing(fileDialog.FileName);           
-            string connectionString = $@"Data Source=(localdb)\MSSQLLocalDB;AttachDbFilename={dbPath};Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
+            
             var templates = new Dictionary<string, MFCCFrame[]>();
             List<string> bestMatches= new List<string>();
-            
+            if ((function_box.Text == "Pruning(Search Path)" || function_box.Text == "Pruning(Path cost)") && string.IsNullOrWhiteSpace(width_box.Text))
+            {
+                MessageBox.Show("Please add the width first.");
+                return;
+            }
             using (var conn = new SqlConnection(connectionString))
             {
                 conn.Open();
@@ -464,8 +477,32 @@ namespace Recorder
 
                     seq = AudioOperations.ExtractFeatures(hobba[i].UserTemplates[k]);
                     //if (seq.Frames.Any(f => f.Features.Any(feat => double.IsNaN(feat) || double.IsInfinity(feat))))
-
-                    string bestMatch = DTW.MatchingWithTemplatesDTW(seq.Frames, templates);
+                    var inputFrames = seq.Frames;
+                    string bestMatch = null;
+                    if (function_box.Text == "DTW")
+                    {
+                        bestMatch = DTW.MatchingWithTemplatesDTW(inputFrames, templates);
+                    }
+                    else if (function_box.Text == "DTW(Time Sync)")
+                    {
+                        // soon
+                        bestMatch = DTW.MatchingWithTemplatesDTW(inputFrames, templates);
+                        //best_match = minDistance;
+                    }
+                    else if (function_box.Text == "Pruning(Path cost)")
+                    {
+                        bestMatch = Prunning.PruningMatchingPathCost(inputFrames, templates, Convert.ToInt32(width_box.Text));
+                    }
+                    else if (function_box.Text == "Pruning(Search Path)")
+                    {
+                        bestMatch = Prunning.PruningMatchingSearchPath(inputFrames, templates, Convert.ToInt32(width_box.Text));
+                    }
+                    else
+                    {
+                        // soon
+                        //Beam(Time sync) Code Here 
+                        bestMatch = DTW.MatchingWithTemplatesDTW(inputFrames, templates);
+                    }
                     /*double min = double.PositiveInfinity;
                     string bestMatch = "";
                     foreach (var kvp in templates)
@@ -488,7 +525,8 @@ namespace Recorder
                 
             }    
             double acc = TestcaseLoader.CheckTestcaseAccuracy(hobba,bestMatches);
-            Console.WriteLine("Accuracy = " + acc);
+            double testAcc = (1 - acc) * 100;
+            MessageBox.Show("Accuracy = " + testAcc);
         }
 
         private void function_box_SelectedIndexChanged(object sender, EventArgs e)

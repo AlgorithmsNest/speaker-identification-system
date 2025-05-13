@@ -27,7 +27,16 @@ namespace Recorder
            
             string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
             string projectRoot = Directory.GetParent(baseDirectory).Parent.Parent.FullName;
-            string dbPath = Path.Combine(projectRoot, "GUI", "voice_enrollment_data.mdf");
+            string trimmedRoot = projectRoot;
+            if (Path.GetFileName(projectRoot).Equals("bin", StringComparison.OrdinalIgnoreCase))
+            {
+                trimmedRoot = Directory.GetParent(projectRoot).FullName;
+            }
+            //Release Path
+            string dbPath = Path.Combine(trimmedRoot, "GUI", "voice_enrollment_data.mdf");
+            //Debug Path
+            //string dbPath = Path.Combine(projectRoot,"GUI","voice_enrollment_data.mdf");
+            Console.WriteLine(dbPath);
             connectionString = $@"Data Source=(localdb)\MSSQLLocalDB;AttachDbFilename={dbPath};Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
         }
 
