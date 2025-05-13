@@ -444,7 +444,11 @@ namespace Recorder
             
             var templates = new Dictionary<string, MFCCFrame[]>();
             List<string> bestMatches= new List<string>();
-            
+            if ((function_box.Text == "Pruning(Search Path)" || function_box.Text == "Pruning(Path cost)") && string.IsNullOrWhiteSpace(width_box.Text))
+            {
+                MessageBox.Show("Please add the width first.");
+                return;
+            }
             using (var conn = new SqlConnection(connectionString))
             {
                 conn.Open();
@@ -473,8 +477,32 @@ namespace Recorder
 
                     seq = AudioOperations.ExtractFeatures(hobba[i].UserTemplates[k]);
                     //if (seq.Frames.Any(f => f.Features.Any(feat => double.IsNaN(feat) || double.IsInfinity(feat))))
-
-                    string bestMatch = DTW.MatchingWithTemplatesDTW(seq.Frames, templates);
+                    var inputFrames = seq.Frames;
+                    string bestMatch = null;
+                    if (function_box.Text == "DTW")
+                    {
+                        bestMatch = DTW.MatchingWithTemplatesDTW(inputFrames, templates);
+                    }
+                    else if (function_box.Text == "DTW(Time Sync)")
+                    {
+                        // soon
+                        bestMatch = DTW.MatchingWithTemplatesDTW(inputFrames, templates);
+                        //best_match = minDistance;
+                    }
+                    else if (function_box.Text == "Pruning(Path cost)")
+                    {
+                        bestMatch = Prunning.PruningMatchingPathCost(inputFrames, templates, Convert.ToInt32(width_box.Text));
+                    }
+                    else if (function_box.Text == "Pruning(Search Path)")
+                    {
+                        bestMatch = Prunning.PruningMatchingSearchPath(inputFrames, templates, Convert.ToInt32(width_box.Text));
+                    }
+                    else
+                    {
+                        // soon
+                        //Beam(Time sync) Code Here 
+                        bestMatch = DTW.MatchingWithTemplatesDTW(inputFrames, templates);
+                    }
                     /*double min = double.PositiveInfinity;
                     string bestMatch = "";
                     foreach (var kvp in templates)
@@ -497,7 +525,8 @@ namespace Recorder
                 
             }    
             double acc = TestcaseLoader.CheckTestcaseAccuracy(hobba,bestMatches);
-            Console.WriteLine("Accuracy = " + acc);
+            double testAcc = (1 - acc) * 100;
+            MessageBox.Show("Accuracy = " + testAcc);
         }
 
         private void function_box_SelectedIndexChanged(object sender, EventArgs e)
