@@ -34,6 +34,7 @@ namespace Recorder
         {
             InitializeComponent();
             Name_box.ReadOnly = true;
+            Distance_box.ReadOnly = true;
             chart.SimpleMode = true;
             chart.AddWaveform("wave", Color.Green, 1, false);
             width_label.Visible = false;
@@ -325,8 +326,8 @@ namespace Recorder
         }
         private void btnIdentify_Click(object sender, EventArgs e)
         {
-            Stopwatch stopwatch = new Stopwatch();
-            stopwatch.Start();
+            //Stopwatch stopwatch = new Stopwatch();
+            //stopwatch.Start();
             try
             {
                 if (seq == null)
@@ -342,8 +343,9 @@ namespace Recorder
                 var inputFrames = seq.Frames;
 
                 //usernames of sample traning sets
-               
-                var templates = new Dictionary<string, MFCCFrame[]>();
+
+                var templates = new Dictionary<string, List<MFCCFrame[]>>(); // EACH USER CAN HAVE MULTIPLE OF VOICES IN TRAINING DATA
+
                 using (var conn = new SqlConnection(connectionString))
                 {
                     conn.Open();
@@ -354,49 +356,62 @@ namespace Recorder
                         while (reader.Read())
                         {
                             string user = reader.GetString(0);
-                            string templateString = reader.GetString(1);                                                                                 
-                            templates[user] = ParseTemplate(templateString);
-                            
+                            string templateString = reader.GetString(1);
+
+                            // check if the key is already exist before in map or not (this user has voice before)
+                            if (!templates.ContainsKey(user))
+                            {
+                                templates[user] = new List<MFCCFrame[]>();
+                            }
+
+                            templates[user].Add(ParseTemplate(templateString));
+
                         }
                     }
                 }
 
-                string distance = "";
+                (string bestMatchName, double matchDistance)? bestMatch = null; // tuple object that will be returned by matching function
+                
                 if (function_box.Text == "DTW")
                 {
-                    distance = DTW.MatchingWithTemplatesDTW(inputFrames, templates,false);
+                    bestMatch = DTW.MatchingWithTemplatesDTW(inputFrames, templates);
                 }
                 else if (function_box.Text == "DTW(Time Sync)")
                 {
                     // soon
-                    distance = DTW.MatchingVoicesTimeSync(inputFrames, templates);
+                    //bestMatch = DTW.MatchingVoicesTimeSync(inputFrames, templates);
+                    bestMatch = DTW.MatchingWithTemplatesDTW(inputFrames, templates);
                     //best_match = minDistance;
                 }
                 else if (function_box.Text == "Pruning(Path cost)")
                 {
-                    distance = Prunning.PruningMatchingPathCost(inputFrames, templates, Convert.ToInt32(width_box.Text), false);
+                    bestMatch = Prunning.PruningMatchingPathCost(inputFrames, templates, Convert.ToInt32(width_box.Text));
                 }
                 else if (function_box.Text == "Pruning(Search Path)")
                 {
-                    distance = Prunning.PruningMatchingSearchPath(inputFrames, templates, Convert.ToInt32(width_box.Text), false);
+                    bestMatch = Prunning.PruningMatchingSearchPath(inputFrames, templates, Convert.ToInt32(width_box.Text));
                 }
                 else
                 {
                     // soon
                     //Beam(Time sync) Code Here 
-                    distance = DTW.MatchingVoicesTimeSync(inputFrames, templates);
+                    //bestMatch = DTW.MatchingVoicesTimeSync(inputFrames, templates);
+                    bestMatch = DTW.MatchingWithTemplatesDTW(inputFrames, templates);
                 }        
 
-                Name_box.Text = distance ?? "No match found";
+                Name_box.Text = bestMatch.Value.bestMatchName ?? "No match found";
+                Distance_box.Text = bestMatch.Value.matchDistance.ToString() ?? "No match found";
+                
             }
             catch (Exception ex)
             {
                 Name_box.Text = "Error";
+                Distance_box.Text = "Error";
                 MessageBox.Show("Identification failed: " + ex.Message);
 
             }
-            stopwatch.Stop();
-            MessageBox.Show("Normal DTW--- Elapsed Time in sec: " + stopwatch.Elapsed.TotalSeconds + " s");
+            //stopwatch.Stop();
+            //MessageBox.Show("Normal DTW--- Elapsed Time in sec: " + stopwatch.Elapsed.TotalSeconds + " s");
         }
         private void btnRecord_Click_1(object sender, EventArgs e)
         {
@@ -446,13 +461,15 @@ namespace Recorder
             
             OpenFileDialog fileDialog = new OpenFileDialog();
             fileDialog.ShowDialog();
+
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
             var hobba = TestcaseLoader.LoadTestcase1Testing(fileDialog.FileName);
-           
 
-            var templates = new Dictionary<string, MFCCFrame[]>();
-            List<string> bestMatches= new List<string>();
+            //var templates = new Dictionary<string, MFCCFrame[]>(); // VALUE IS UNIQUE IN MAP PER KEY SO IT ONLY STORE ONE VOICE (frames of voice) for each unique user 
+            var templates = new Dictionary<string, List<MFCCFrame[]>>(); // NEW 
+
+            List<string> bestMatches= new List<string>(); // most matched voice with each testing voice
             if ((function_box.Text == "Pruning(Search Path)" || function_box.Text == "Pruning(Path cost)") && string.IsNullOrWhiteSpace(width_box.Text))
             {
                 MessageBox.Show("Please add the width first.");
@@ -473,12 +490,22 @@ namespace Recorder
                         {
                             if (hobba.Any(h => h.UserName == user))
                             {
-                                templates[user] = ParseTemplate(templateString);
+                                if (!templates.ContainsKey(user))
+                                {
+                                    templates[user] = new List<MFCCFrame[]>();
+                                }
+
+                                templates[user].Add(ParseTemplate(templateString));
                             }
                         }                     
                         else
                         {
-                            templates[user] = ParseTemplate(templateString);
+                            if (!templates.ContainsKey(user))
+                            {
+                                templates[user] = new List<MFCCFrame[]>();
+                            }
+
+                            templates[user].Add(ParseTemplate(templateString));
                         }
                     }
                 }
@@ -494,46 +521,34 @@ namespace Recorder
                     seq = AudioOperations.ExtractFeatures(hobba[i].UserTemplates[k]);
                     //if (seq.Frames.Any(f => f.Features.Any(feat => double.IsNaN(feat) || double.IsInfinity(feat))))
                     var inputFrames = seq.Frames;
-                    string bestMatch = null;
+
+                    (string bestMatchName, double matchDistance)? bestMatch = null; // tuple object that will be returned by matching function
                     if (function_box.Text == "DTW")
                     {
-                        bestMatch = DTW.MatchingWithTemplatesDTW(inputFrames, templates,true);
+                        bestMatch = DTW.MatchingWithTemplatesDTW(inputFrames, templates);
                     }
                     else if (function_box.Text == "DTW(Time Sync)")
                     {
                         // soon
-                        bestMatch = DTW.MatchingWithTemplatesDTW(inputFrames, templates, true);
+                        bestMatch = DTW.MatchingWithTemplatesDTW(inputFrames, templates);
                         //best_match = minDistance;
                     }
                     else if (function_box.Text == "Pruning(Path cost)")
                     {
-                        bestMatch = Prunning.PruningMatchingPathCost(inputFrames, templates, Convert.ToInt32(width_box.Text), true);
+                        bestMatch = Prunning.PruningMatchingPathCost(inputFrames, templates, Convert.ToInt32(width_box.Text));
                     }
                     else if (function_box.Text == "Pruning(Search Path)")
                     {
-                        bestMatch = Prunning.PruningMatchingSearchPath(inputFrames, templates, Convert.ToInt32(width_box.Text), true);
+                        bestMatch = Prunning.PruningMatchingSearchPath(inputFrames, templates, Convert.ToInt32(width_box.Text));
                     }
                     else
                     {
                         // soon
                         //Beam(Time sync) Code Here 
-                        bestMatch = DTW.MatchingWithTemplatesDTW(inputFrames, templates, true);
+                        bestMatch = DTW.MatchingWithTemplatesDTW(inputFrames, templates);
                     }
-                    /*double min = double.PositiveInfinity;
-                    string bestMatch = "";
-                    foreach (var kvp in templates)
-                    {
-                        string templateUser = kvp.Key;
-                        MFCCFrame[] templateSeq = kvp.Value;
-
-                        double distance = DTW.MatchingVoices(seq.Frames, templateSeq);                            
-                        if (distance < min)
-                        {
-                            min = distance;
-                            bestMatch = templateUser;
-                        }
-                    }*/
-                    bestMatches.Add(bestMatch);                       
+                    
+                    bestMatches.Add(bestMatch.Value.bestMatchName);                       
                     //Console.WriteLine($"Test sample {i}-{k} best matched: {bestMatch}");
                 
                 
@@ -541,10 +556,12 @@ namespace Recorder
                 
             }    
             stopwatch.Stop();
-            double acc = TestcaseLoader.CheckTestcaseAccuracy(hobba,bestMatches);
-            double testAcc = (1 - acc) * 100;
+            Console.WriteLine("Elapsed Time in sec for loading testing data and matching: " + stopwatch.Elapsed.TotalSeconds + " s");
+            double error = TestcaseLoader.CheckTestcaseAccuracy(hobba,bestMatches);
+            double testAcc = (1 - error) * 100;
             MessageBox.Show("Accuracy = " + testAcc);
-            MessageBox.Show("Normal DTW--- Elapsed Time in sec: " + stopwatch.Elapsed.TotalSeconds + " s");
+            
+            
         }
 
         private void function_box_SelectedIndexChanged(object sender, EventArgs e)
@@ -557,5 +574,7 @@ namespace Recorder
                 width_box.Visible = true;
             }
         }
+
+        
     }
 }

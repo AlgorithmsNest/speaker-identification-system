@@ -52,22 +52,25 @@
             this.width_label = new System.Windows.Forms.Label();
             this.width_box = new System.Windows.Forms.TextBox();
             this.testCase_box = new System.Windows.Forms.ComboBox();
+            this.matchedWith = new System.Windows.Forms.Label();
+            this.Distance_box = new System.Windows.Forms.TextBox();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).BeginInit();
             this.SuspendLayout();
             // 
             // Name_box
             // 
-            this.Name_box.Location = new System.Drawing.Point(235, 188);
+            this.Name_box.Location = new System.Drawing.Point(231, 188);
             this.Name_box.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.Name_box.Name = "Name_box";
             this.Name_box.Size = new System.Drawing.Size(143, 22);
             this.Name_box.TabIndex = 22;
+            
             // 
             // Name_label
             // 
             this.Name_label.AutoSize = true;
-            this.Name_label.Location = new System.Drawing.Point(169, 191);
+            this.Name_label.Location = new System.Drawing.Point(391, 191);
             this.Name_label.Name = "Name_label";
             this.Name_label.Size = new System.Drawing.Size(60, 16);
             this.Name_label.TabIndex = 21;
@@ -170,7 +173,7 @@
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Padding = new System.Windows.Forms.Padding(5, 2, 0, 2);
-            this.menuStrip1.Size = new System.Drawing.Size(553, 28);
+            this.menuStrip1.Size = new System.Drawing.Size(775, 28);
             this.menuStrip1.TabIndex = 11;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -265,7 +268,7 @@
             // width_label
             // 
             this.width_label.AutoSize = true;
-            this.width_label.Location = new System.Drawing.Point(399, 191);
+            this.width_label.Location = new System.Drawing.Point(621, 191);
             this.width_label.Name = "width_label";
             this.width_label.Size = new System.Drawing.Size(41, 16);
             this.width_label.TabIndex = 26;
@@ -273,7 +276,7 @@
             // 
             // width_box
             // 
-            this.width_box.Location = new System.Drawing.Point(443, 188);
+            this.width_box.Location = new System.Drawing.Point(665, 188);
             this.width_box.Name = "width_box";
             this.width_box.Size = new System.Drawing.Size(98, 22);
             this.width_box.TabIndex = 27;
@@ -290,11 +293,30 @@
             this.testCase_box.Size = new System.Drawing.Size(121, 24);
             this.testCase_box.TabIndex = 28;
             // 
+            // matchedWith
+            // 
+            this.matchedWith.AutoSize = true;
+            this.matchedWith.Location = new System.Drawing.Point(141, 191);
+            this.matchedWith.Name = "matchedWith";
+            this.matchedWith.Size = new System.Drawing.Size(84, 16);
+            this.matchedWith.TabIndex = 29;
+            this.matchedWith.Text = "Matched with";
+            // 
+            // Distance_box
+            // 
+            this.Distance_box.Location = new System.Drawing.Point(457, 188);
+            this.Distance_box.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.Distance_box.Name = "Distance_box";
+            this.Distance_box.Size = new System.Drawing.Size(143, 22);
+            this.Distance_box.TabIndex = 30;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(553, 222);
+            this.ClientSize = new System.Drawing.Size(775, 222);
+            this.Controls.Add(this.Distance_box);
+            this.Controls.Add(this.matchedWith);
             this.Controls.Add(this.testCase_box);
             this.Controls.Add(this.width_box);
             this.Controls.Add(this.width_label);
@@ -348,5 +370,7 @@
         private System.Windows.Forms.Label width_label;
         private System.Windows.Forms.TextBox width_box;
         private System.Windows.Forms.ComboBox testCase_box;
+        private System.Windows.Forms.Label matchedWith;
+        private System.Windows.Forms.TextBox Distance_box;
     }
 }

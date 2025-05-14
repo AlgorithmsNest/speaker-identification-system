@@ -6,13 +6,15 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using Accord.Math;
+
 namespace Recorder
 {
     public static class DTW
     {
         public static double EuclideanDistance(MFCCFrame a, MFCCFrame b)
         {
-            if (a?.Features == null || b?.Features == null)
+            /*if (a?.Features == null || b?.Features == null)
             {
                 //Console.WriteLine("Warning: One or both MFCCFrames have null Features.");
                 return double.PositiveInfinity;
@@ -30,15 +32,19 @@ namespace Recorder
             if (hasInvalidA || hasInvalidB)
             {              
                 return double.PositiveInfinity; // Return Infinity for invalid frames
-            }
+            }*/
 
+            // 13 features for each frame
             double sum = 0;
+            //Console.WriteLine("---------------------------------");
             for (int i = 0; i < a.Features.Length; i++)
             {
+                //if (a.Features[i] == b.Features[i])
+                //    Console.WriteLine(a.Features[i] + " : " + b.Features[i]);
                 double diff = a.Features[i] - b.Features[i];
-                sum += diff * diff;
+                sum += (diff * diff);
             }
-
+            //Console.WriteLine("---------------------------------");
             return Math.Sqrt(sum);
         }
 
@@ -83,6 +89,13 @@ namespace Recorder
         }
         public static string MatchingVoicesTimeSync(MFCCFrame[] input, Dictionary<string, MFCCFrame[]> templates)
         {
+
+            // NOTE: 
+            // Dictionary<string, MFCCFrame[]> templates should be Dictionary<string, List<MFCCFrame[]>> templates
+            // you can modify it here and make loop for each user and loop for voice in each user
+            // , or in the class itself make it name and List<List<MFCCFrame[]>> templates but you will need to modify constructor and match function
+            // I commented it in Identification until you finish it 
+            // Don't forget to make return type of the function (String,double) if you need to
             var matchers = templates
                 .Select(t => new TemplateMatcher(t.Key, t.Value))
                 .ToList();
@@ -99,9 +112,13 @@ namespace Recorder
             return best?.Name;
         }
 
-        public static string MatchingWithTemplatesDTW(MFCCFrame[] inputFrames, Dictionary<string, MFCCFrame[]> templates,bool x)
+        // return type is pair but here named tuple , name of user of best mached voice with , min distance
+        public static (string bestMatchName, double matchDistance) MatchingWithTemplatesDTW(MFCCFrame[] inputFrames, Dictionary<string, List<MFCCFrame[]>> templates)
         {
-            
+
+            //Console.WriteLine("HERE");
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
 
             string bestMatch = null;
             double minDistance = double.PositiveInfinity;
@@ -109,21 +126,27 @@ namespace Recorder
 
             foreach (var kvp in templates)
             {
+                //Console.WriteLine("I'm in loop count me---");
                 string user = kvp.Key;
-                MFCCFrame[] template = kvp.Value;
-                distance = DynamicTimeWarping(inputFrames, template);
-                if (distance < minDistance)
+                foreach (var tempalate_voice in kvp.Value) // templates[user]
                 {
-                    minDistance = distance;
-                    bestMatch = user;
+                    MFCCFrame[] template = tempalate_voice;
+                    distance = DynamicTimeWarping(inputFrames, template);
+                    //Console.WriteLine("Distance in loop with each template frame: " + distance);
+                    if (distance < minDistance)
+                    {
+                        minDistance = distance;
+                        bestMatch = user;
+                    }
                 }
 
+
             }
-            if (x)
-            {
-                return bestMatch;
-            }
-            return minDistance.ToString();
+            //Console.WriteLine("Min Distance is: " + minDistance); // not Console.WriteLine("Min Distance is: " , minDistance);
+            //Console.WriteLine("Normal DTW--- Elapsed Time in ms: " + stopwatch.ElapsedMilliseconds + " ms");
+            //Console.WriteLine("Normal DTW--- Elapsed Time in sec: " + stopwatch.Elapsed.TotalSeconds + " s");
+            return (bestMatch,minDistance);
+            
         }
 
     }
@@ -282,8 +305,11 @@ namespace Recorder
         }
 
 
-        public static string PruningMatchingSearchPath(MFCCFrame[] inputFrames, Dictionary<string, MFCCFrame[]> templates,int width,bool x)
-        {            
+        public static (string,double) PruningMatchingSearchPath(MFCCFrame[] inputFrames, Dictionary<string, List<MFCCFrame[]>> templates, int width)
+        {
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+
             string bestMatch = null;
             double minDistance = double.PositiveInfinity;
             double distance;
@@ -291,24 +317,30 @@ namespace Recorder
             foreach (var kvp in templates)
             {
                 string user = kvp.Key;
-                MFCCFrame[] template = kvp.Value;
-                distance = PruningLimitngPathCost(inputFrames, template,width);
-                if (distance < minDistance)
+                foreach (var tempalate_voice in kvp.Value) // templates[user]
                 {
-                    minDistance = distance;
-                    bestMatch = user;
+                    MFCCFrame[] template = tempalate_voice;
+                    distance = PruningLimitngSearchPath(inputFrames, template, width);
+                    //Console.WriteLine("Distance in loop with each template frame: " + distance);
+                    if (distance < minDistance)
+                    {
+                        minDistance = distance;
+                        bestMatch = user;
+                    }
                 }
 
             }
-            if (x)
-            {
-                return bestMatch;
-            }
-            return minDistance.ToString();
+            stopwatch.Stop();
+            Console.WriteLine("Pruning Search Path--- Elapsed Time in ms: " + stopwatch.ElapsedMilliseconds + " ms");
+            Console.WriteLine("Pruning Search Path--- Elapsed Time in sec: " + stopwatch.Elapsed.TotalSeconds + " s");
+            return (bestMatch,minDistance);
         }
 
-        public static string PruningMatchingPathCost(MFCCFrame[] inputFrames, Dictionary<string, MFCCFrame[]> templates,int beam_width,bool x)
-        {           
+        public static (string,double) PruningMatchingPathCost(MFCCFrame[] inputFrames, Dictionary<string, List<MFCCFrame[]>> templates, int beam_width)
+        {
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+
             string bestMatch = null;
             double minDistance = double.PositiveInfinity;
             double distance;
@@ -316,20 +348,23 @@ namespace Recorder
             foreach (var kvp in templates)
             {
                 string user = kvp.Key;
-                MFCCFrame[] template = kvp.Value;
-                distance = PruningLimitngPathCost(inputFrames, template, beam_width);
-                if (distance < minDistance)
+                foreach (var tempalate_voice in kvp.Value) // templates[user]
                 {
-                    minDistance = distance;
-                    bestMatch = user;
+                    MFCCFrame[] template = tempalate_voice;
+                    distance = PruningLimitngPathCost(inputFrames, template, beam_width);
+                    //Console.WriteLine("Distance in loop with each template frame: " + distance);
+                    if (distance < minDistance)
+                    {
+                        minDistance = distance;
+                        bestMatch = user;
+                    }
                 }
 
             }
-            if (x)
-            {
-                return bestMatch;
-            }
-            return minDistance.ToString();
+            stopwatch.Stop();
+            Console.WriteLine("Pruning Path Cost--- Elapsed Time in ms: " + stopwatch.ElapsedMilliseconds + " ms");
+            Console.WriteLine("Pruning Path Cost--- Elapsed Time in sec: " + stopwatch.Elapsed.TotalSeconds + " s");
+            return (bestMatch, minDistance);
         }
 
         public static bool checkValidWidthSearchPath(MFCCFrame[] inputFrames, MFCCFrame[] template)
@@ -351,7 +386,7 @@ namespace Recorder
         private double[] prevRow;
         private double[] currRow;
 
-        public TemplateMatcher(string name, MFCCFrame[] template)
+        public TemplateMatcher(string name, MFCCFrame[] template) // templates (voices) of a user
         {
             Name = name;
             Template = template;

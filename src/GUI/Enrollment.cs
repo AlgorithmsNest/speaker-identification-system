@@ -516,9 +516,11 @@ namespace Recorder
                     conn.Close();
                 }
             });
-            MessageBox.Show("Completely Done!");
             stopwatch.Stop();
-            MessageBox.Show("Normal DTW--- Elapsed Time in sec: " + stopwatch.Elapsed.TotalSeconds + " s");
+            Console.WriteLine("Completely Done Loading Training Data!");
+            Console.WriteLine("Elapsed Time in sec for loading training data: " + stopwatch.Elapsed.TotalSeconds + " s");
+            
+           
         }
         private void button1_Click(object sender, EventArgs e)
         {
