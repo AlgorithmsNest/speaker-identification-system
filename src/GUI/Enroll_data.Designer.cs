@@ -71,7 +71,6 @@
             this.ID_box.Name = "ID_box";
             this.ID_box.Size = new System.Drawing.Size(64, 24);
             this.ID_box.TabIndex = 3;
-          
             // 
             // Save_button
             // 
@@ -92,7 +91,6 @@
             this.label1.Size = new System.Drawing.Size(127, 16);
             this.label1.TabIndex = 5;
             this.label1.Text = "Try Record \"run run\"";
-           
             // 
             // user_button
             // 
@@ -129,6 +127,7 @@
             this.Controls.Add(this.user_label);
             this.Name = "Enroll_data";
             this.Text = "Enrollment Data";
+            this.Load += new System.EventHandler(this.Enroll_data_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 

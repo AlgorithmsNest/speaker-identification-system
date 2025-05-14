@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
-
+using System.Threading.Tasks;
 namespace Recorder
 {
     public static class DTW
@@ -79,14 +79,29 @@ namespace Recorder
                 curr = temp;
             }
 
-            return prev[templateLen] / Math.Max(inputLen, templateLen);
+            return prev[templateLen];
+        }
+        public static string MatchingVoicesTimeSync(MFCCFrame[] input, Dictionary<string, MFCCFrame[]> templates)
+        {
+            var matchers = templates
+                .Select(t => new TemplateMatcher(t.Key, t.Value))
+                .ToList();
+
+            foreach (var frame in input)
+            {
+                Parallel.ForEach(matchers, matcher =>
+                {
+                    matcher.match(frame);
+                });
+            }
+
+            var best = matchers.OrderBy(m => m.CurrentScore).FirstOrDefault();
+            return best?.Name;
         }
 
-
-        public static string MatchingWithTemplatesDTW(MFCCFrame[] inputFrames, Dictionary<string, MFCCFrame[]> templates)
+        public static string MatchingWithTemplatesDTW(MFCCFrame[] inputFrames, Dictionary<string, MFCCFrame[]> templates,bool x)
         {
-            Stopwatch stopwatch = new Stopwatch();
-            stopwatch.Start();
+            
 
             string bestMatch = null;
             double minDistance = double.PositiveInfinity;
@@ -104,9 +119,11 @@ namespace Recorder
                 }
 
             }
-            Console.WriteLine("Normal DTW--- Elapsed Time in ms: " + stopwatch.ElapsedMilliseconds + " ms");
-            Console.WriteLine("Normal DTW--- Elapsed Time in sec: " + stopwatch.Elapsed.TotalSeconds + " s");
-            return bestMatch;
+            if (x)
+            {
+                return bestMatch;
+            }
+            return minDistance.ToString();
         }
 
     }
@@ -265,11 +282,8 @@ namespace Recorder
         }
 
 
-        public static string PruningMatchingSearchPath(MFCCFrame[] inputFrames, Dictionary<string, MFCCFrame[]> templates,int width)
-        {
-            Stopwatch stopwatch = new Stopwatch();
-            stopwatch.Start();
-
+        public static string PruningMatchingSearchPath(MFCCFrame[] inputFrames, Dictionary<string, MFCCFrame[]> templates,int width,bool x)
+        {            
             string bestMatch = null;
             double minDistance = double.PositiveInfinity;
             double distance;
@@ -286,17 +300,15 @@ namespace Recorder
                 }
 
             }
-            stopwatch.Stop();
-            Console.WriteLine("Pruning Search Path--- Elapsed Time in ms: " + stopwatch.ElapsedMilliseconds + " ms");
-            Console.WriteLine("Pruning Search Path--- Elapsed Time in sec: " + stopwatch.Elapsed.TotalSeconds + " s");
-            return bestMatch;
+            if (x)
+            {
+                return bestMatch;
+            }
+            return minDistance.ToString();
         }
 
-        public static string PruningMatchingPathCost(MFCCFrame[] inputFrames, Dictionary<string, MFCCFrame[]> templates,int beam_width)
-        {
-            Stopwatch stopwatch = new Stopwatch();
-            stopwatch.Start();
-
+        public static string PruningMatchingPathCost(MFCCFrame[] inputFrames, Dictionary<string, MFCCFrame[]> templates,int beam_width,bool x)
+        {           
             string bestMatch = null;
             double minDistance = double.PositiveInfinity;
             double distance;
@@ -313,10 +325,11 @@ namespace Recorder
                 }
 
             }
-            stopwatch.Stop();
-            Console.WriteLine("Pruning Path Cost--- Elapsed Time in ms: " + stopwatch.ElapsedMilliseconds + " ms");
-            Console.WriteLine("Pruning Path Cost--- Elapsed Time in sec: " + stopwatch.Elapsed.TotalSeconds + " s");
-            return bestMatch;
+            if (x)
+            {
+                return bestMatch;
+            }
+            return minDistance.ToString();
         }
 
         public static bool checkValidWidthSearchPath(MFCCFrame[] inputFrames, MFCCFrame[] template)
@@ -330,5 +343,47 @@ namespace Recorder
             // soon 
             return true;
         }
+    }
+    public class TemplateMatcher
+    {
+        public string Name { get; }
+        private MFCCFrame[] Template;
+        private double[] prevRow;
+        private double[] currRow;
+
+        public TemplateMatcher(string name, MFCCFrame[] template)
+        {
+            Name = name;
+            Template = template;
+            prevRow = new double[template.Length + 1];
+            currRow = new double[template.Length + 1];
+
+            for (int j = 0; j <= template.Length; j++)
+                prevRow[j] = double.PositiveInfinity;
+            prevRow[0] = 0;
+        }
+
+        public void match(MFCCFrame inputFrame)
+        {
+            for (int j = 0; j <= Template.Length; j++)
+                currRow[j] = double.PositiveInfinity;
+
+            for (int j = 1; j <= Template.Length; j++)
+            {
+                double dist = DTW.EuclideanDistance(inputFrame, Template[j - 1]);
+
+                double minPrev = Math.Min(prevRow[j], prevRow[j - 1]);
+                if (j >= 2)
+                    minPrev = Math.Min(minPrev, prevRow[j - 2]);
+
+                currRow[j] = dist + minPrev;
+            }
+
+            var temp = prevRow;
+            prevRow = currRow;
+            currRow = temp;
+        }
+
+        public double CurrentScore => prevRow[Template.Length];
     }
 } ///////

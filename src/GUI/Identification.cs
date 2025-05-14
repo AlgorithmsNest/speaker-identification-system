@@ -15,6 +15,7 @@ using System.Linq;
 using System.Data.SqlClient;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 using AForge.Math.Metrics;
+using System.Diagnostics;
 
 namespace Recorder
 {
@@ -28,8 +29,7 @@ namespace Recorder
         private Encoder encoder;
         private Decoder decoder;
         private string connectionString;
-        private bool isRecorded;
-        private bool isSaved;
+        private bool isRecorded;      
         public Form1()
         {
             InitializeComponent();
@@ -275,7 +275,7 @@ namespace Recorder
                 //Open the selected audio file
 
                 signal = AudioOperations.OpenAudioFile(path);
-                signal = AudioOperations.RemoveSilence(signal);
+                //signal = AudioOperations.RemoveSilence(signal);
                 seq = AudioOperations.ExtractFeatures(signal);
                 for (int i = 0; i < seq.Frames.Length; i++)
                 {
@@ -286,8 +286,7 @@ namespace Recorder
                             throw new Exception("NaN");
                     }
                 }
-                updateButtons();
-                isSaved = true;
+                updateButtons();                
             }
         }
 
@@ -323,6 +322,8 @@ namespace Recorder
         }
         private void btnIdentify_Click(object sender, EventArgs e)
         {
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
             try
             {
                 if (seq == null)
@@ -356,33 +357,33 @@ namespace Recorder
                     }
                 }
 
-                string bestMatch = null;
+                string distance = "";
                 if (function_box.Text == "DTW")
                 {
-                    bestMatch = DTW.MatchingWithTemplatesDTW(inputFrames, templates);
+                    distance = DTW.MatchingWithTemplatesDTW(inputFrames, templates,false);
                 }
                 else if (function_box.Text == "DTW(Time Sync)")
                 {
                     // soon
-                    bestMatch = DTW.MatchingWithTemplatesDTW(inputFrames, templates);
+                    distance = DTW.MatchingVoicesTimeSync(inputFrames, templates);
                     //best_match = minDistance;
                 }
                 else if (function_box.Text == "Pruning(Path cost)")
                 {
-                    bestMatch = Prunning.PruningMatchingPathCost(inputFrames, templates, Convert.ToInt32(width_box.Text));
+                    distance = Prunning.PruningMatchingPathCost(inputFrames, templates, Convert.ToInt32(width_box.Text), false);
                 }
                 else if (function_box.Text == "Pruning(Search Path)")
                 {
-                    bestMatch = Prunning.PruningMatchingSearchPath(inputFrames, templates, Convert.ToInt32(width_box.Text));
+                    distance = Prunning.PruningMatchingSearchPath(inputFrames, templates, Convert.ToInt32(width_box.Text), false);
                 }
                 else
                 {
                     // soon
                     //Beam(Time sync) Code Here 
-                    bestMatch = DTW.MatchingWithTemplatesDTW(inputFrames, templates);
+                    distance = DTW.MatchingVoicesTimeSync(inputFrames, templates);
                 }        
 
-                Name_box.Text = bestMatch ?? "No match found";
+                Name_box.Text = distance ?? "No match found";
             }
             catch (Exception ex)
             {
@@ -390,6 +391,8 @@ namespace Recorder
                 MessageBox.Show("Identification failed: " + ex.Message);
 
             }
+            stopwatch.Stop();
+            MessageBox.Show("Normal DTW--- Elapsed Time in sec: " + stopwatch.Elapsed.TotalSeconds + " s");
         }
         private void btnRecord_Click_1(object sender, EventArgs e)
         {
@@ -439,7 +442,8 @@ namespace Recorder
             
             OpenFileDialog fileDialog = new OpenFileDialog();
             fileDialog.ShowDialog();
-
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
             var hobba = TestcaseLoader.LoadTestcase1Testing(fileDialog.FileName);           
             
             var templates = new Dictionary<string, MFCCFrame[]>();
@@ -473,7 +477,7 @@ namespace Recorder
                 for (int k = 0; k < hobba[i].UserTemplates.Count; k++)
                 {
                     //Console.WriteLine("In Function = "+hobba[i].UserTemplates.Count);
-                    Console.WriteLine($"Test #{i}-{k} for User {hobba[i].UserName}");
+                    //Console.WriteLine($"Test #{i}-{k} for User {hobba[i].UserName}");
 
                     seq = AudioOperations.ExtractFeatures(hobba[i].UserTemplates[k]);
                     //if (seq.Frames.Any(f => f.Features.Any(feat => double.IsNaN(feat) || double.IsInfinity(feat))))
@@ -481,27 +485,27 @@ namespace Recorder
                     string bestMatch = null;
                     if (function_box.Text == "DTW")
                     {
-                        bestMatch = DTW.MatchingWithTemplatesDTW(inputFrames, templates);
+                        bestMatch = DTW.MatchingWithTemplatesDTW(inputFrames, templates,true);
                     }
                     else if (function_box.Text == "DTW(Time Sync)")
                     {
                         // soon
-                        bestMatch = DTW.MatchingWithTemplatesDTW(inputFrames, templates);
+                        bestMatch = DTW.MatchingWithTemplatesDTW(inputFrames, templates, true);
                         //best_match = minDistance;
                     }
                     else if (function_box.Text == "Pruning(Path cost)")
                     {
-                        bestMatch = Prunning.PruningMatchingPathCost(inputFrames, templates, Convert.ToInt32(width_box.Text));
+                        bestMatch = Prunning.PruningMatchingPathCost(inputFrames, templates, Convert.ToInt32(width_box.Text), true);
                     }
                     else if (function_box.Text == "Pruning(Search Path)")
                     {
-                        bestMatch = Prunning.PruningMatchingSearchPath(inputFrames, templates, Convert.ToInt32(width_box.Text));
+                        bestMatch = Prunning.PruningMatchingSearchPath(inputFrames, templates, Convert.ToInt32(width_box.Text), true);
                     }
                     else
                     {
                         // soon
                         //Beam(Time sync) Code Here 
-                        bestMatch = DTW.MatchingWithTemplatesDTW(inputFrames, templates);
+                        bestMatch = DTW.MatchingWithTemplatesDTW(inputFrames, templates, true);
                     }
                     /*double min = double.PositiveInfinity;
                     string bestMatch = "";
@@ -518,7 +522,7 @@ namespace Recorder
                         }
                     }*/
                     bestMatches.Add(bestMatch);                       
-                    Console.WriteLine($"Test sample {i}-{k} best matched: {bestMatch}");
+                    //Console.WriteLine($"Test sample {i}-{k} best matched: {bestMatch}");
                 
                 
                 }
@@ -527,6 +531,8 @@ namespace Recorder
             double acc = TestcaseLoader.CheckTestcaseAccuracy(hobba,bestMatches);
             double testAcc = (1 - acc) * 100;
             MessageBox.Show("Accuracy = " + testAcc);
+            stopwatch.Stop();
+            MessageBox.Show("Normal DTW--- Elapsed Time in sec: " + stopwatch.Elapsed.TotalSeconds + " s");
         }
 
         private void function_box_SelectedIndexChanged(object sender, EventArgs e)

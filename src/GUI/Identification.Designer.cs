@@ -66,11 +66,11 @@
             // Name_label
             // 
             this.Name_label.AutoSize = true;
-            this.Name_label.Location = new System.Drawing.Point(180, 191);
+            this.Name_label.Location = new System.Drawing.Point(169, 191);
             this.Name_label.Name = "Name_label";
-            this.Name_label.Size = new System.Drawing.Size(44, 16);
+            this.Name_label.Size = new System.Drawing.Size(60, 16);
             this.Name_label.TabIndex = 21;
-            this.Name_label.Text = "Name";
+            this.Name_label.Text = "Distance";
             // 
             // lbLength
             // 
@@ -243,6 +243,8 @@
             this.function_box.Items.AddRange(new object[] {
             "DTW",
             "DTW(Time Sync)",
+            "Pruning(Search Path)",
+            "Pruning(Path cost)",
             "Beam(Time sync)"});
             this.function_box.Location = new System.Drawing.Point(402, 143);
             this.function_box.Name = "function_box";

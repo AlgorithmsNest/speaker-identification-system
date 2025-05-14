@@ -14,7 +14,8 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 using System.Data;
 using System.Collections.Generic;
-
+using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace Recorder
 {
@@ -43,7 +44,7 @@ namespace Recorder
         private string connectionString;
         private string username_text;
         private int id;
-        private int currId;
+        //private int currId;
         public Enrollment(string username, int userId)
         {
             InitializeComponent();
@@ -340,7 +341,7 @@ namespace Recorder
         }
 
         private void btnAdd_Click(object sender, EventArgs e)
-        {
+        {           
             if ((this.encoder != null || this.decoder != null) && !string.IsNullOrWhiteSpace(username_text) && isSaved)
             {
                 //Dynamic Path                             
@@ -399,89 +400,98 @@ namespace Recorder
             else if (!isSaved)
             {
                 MessageBox.Show("Please Save the Record First!");
-            }           
+            }
+            else
+            {
+                MessageBox.Show("Null occured");
+            }
         }
         private void loadTrain1ToolStripMenuItem_Click(object sender, EventArgs e)
         {
             OpenFileDialog fileDialog = new OpenFileDialog();
             fileDialog.ShowDialog();
-
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
             var hobba = TestcaseLoader.LoadTestcase1Training(fileDialog.FileName);
-            
-            
-            
-            using (var conn = new SqlConnection(connectionString))
+
+
+
+            Parallel.ForEach(hobba, user =>
             {
-                conn.Open();
-                string insertSql = "INSERT INTO voice_templates  (user_id, user_name, template_sequence) VALUES (@id, @name, @template)";
-                string checkQuery = @"SELECT COUNT(*) FROM voice_enrollment_final WHERE user_name = @Username";
-                string query2 = @"
-                                INSERT INTO voice_enrollment_final (user_name) 
-                                VALUES (@Username); 
-                                SELECT SCOPE_IDENTITY();";
-                for (int i = 0; i < hobba.Count; i++)
-            {
-                //var hobba[i] = hobba[i];
-                for (int k = 0; k < hobba[i].UserTemplates.Count; k++)
+                int currId = 0;
+                // Each thread needs its own SqlConnection
+                using (var conn = new SqlConnection(connectionString))
                 {
-                    //Console.WriteLine("In Function = "+hobba[i].UserTemplates.Count);
-                    seq = AudioOperations.ExtractFeatures(hobba[i].UserTemplates[k]);
-                    //Console.WriteLine(seq.ToString());
-                    double[][] features = new double[seq.Frames.Length][];
-                    for (int j = 0; j < seq.Frames.Length; j++)
-                    {
-                        features[j] = seq.Frames[j].Features;
-                       // Console.WriteLine(features[j].ToString());
-                    }                       
-                    
-                    List<string> frameStrings = new List<string>();
+                    conn.Open();
 
-                    for (int x = 0; x < features.Length; x++)
-                    {
-                        frameStrings.Add(string.Join(",", features[x]));
-                        // Console.WriteLine(templateString);
-                    }
-                    string templateString = string.Join(";", frameStrings) + ";";
-                    //Console.WriteLine(templateString.Length);
-                    // You can now use templateString as needed
+                    string insertSql = "INSERT INTO voice_templates (user_id, user_name, template_sequence) VALUES (@id, @name, @template)";
+                    string checkQuery = "SELECT COUNT(*) FROM voice_enrollment_final WHERE user_name = @Username";
+                    string insertUserQuery = @"
+                    INSERT INTO voice_enrollment_final (user_name) 
+                    VALUES (@Username); 
+                    SELECT SCOPE_IDENTITY();";
 
-                    
-                       // string selectQuery = "SELECT template_sequence FROM voice_templates WHERE user_name = @userName ORDER BY user_id DESC";
-                        using (SqlCommand checkCmd = new SqlCommand(checkQuery, conn))
+                    // Check if user exists
+                    using (SqlCommand checkCmd = new SqlCommand(checkQuery, conn))
+                    {
+                        checkCmd.Parameters.AddWithValue("@Username", user.UserName);
+                        int existingCount = (int)checkCmd.ExecuteScalar();
+
+                        if (existingCount <= 0)
                         {
-                            checkCmd.Parameters.AddWithValue("@Username", hobba[i].UserName);
-                            int existingCount = (int)checkCmd.ExecuteScalar();
-
-                            if (existingCount <= 0)
+                            using (SqlCommand cmd = new SqlCommand(insertUserQuery, conn))
                             {
-                                using (SqlCommand cmd = new SqlCommand(query2, conn))
-                                {
-                                    // Add parameters to avoid SQL injection                            
-                                    cmd.Parameters.AddWithValue("@Username", hobba[i].UserName);
-
-                                    object resultId = cmd.ExecuteScalar();
-                                    int newId = Convert.ToInt32(resultId);
-                                    currId = newId;
-                                }
-                               
+                                cmd.Parameters.AddWithValue("@Username", user.UserName);
+                                object resultId = cmd.ExecuteScalar();
+                                currId = Convert.ToInt32(resultId);
                             }
                         }
+                        else
+                        {
+                            // If user exists, get their ID
+                            using (SqlCommand getIdCmd = new SqlCommand("SELECT TOP 1 user_id FROM voice_templates WHERE user_name = @Username ORDER BY user_id DESC", conn))
+                            {
+                                getIdCmd.Parameters.AddWithValue("@Username", user.UserName);
+                                object resultId = getIdCmd.ExecuteScalar();
+                                currId = resultId != null ? Convert.ToInt32(resultId) : 0;
+                            }
+                        }
+                    }
+
+                    foreach (var template in user.UserTemplates)
+                    {
+                        var seq = AudioOperations.ExtractFeatures(template);
+                        double[][] features = new double[seq.Frames.Length][];
+
+                        for (int j = 0; j < seq.Frames.Length; j++)
+                        {
+                            features[j] = seq.Frames[j].Features;
+                        }
+
+                        List<string> frameStrings = new List<string>(features.Length);
+                        for (int x = 0; x < features.Length; x++)
+                        {
+                            frameStrings.Add(string.Join(",", features[x]));
+                        }
+
+                        string templateString = string.Join(";", frameStrings) + ";";
+
                         using (var insertCmd = new SqlCommand(insertSql, conn))
                         {
-                           // Console.WriteLine("########################################################## ");
-                           // Console.WriteLine(" Seq = "+templateString);
                             insertCmd.Parameters.AddWithValue("@id", currId);
-                            insertCmd.Parameters.AddWithValue("@name", hobba[i].UserName);
-                            var param = insertCmd.Parameters.Add("@template", SqlDbType.NVarChar, -1);  // -1 = NVARCHAR(MAX)
+                            insertCmd.Parameters.AddWithValue("@name", user.UserName);
+                            var param = insertCmd.Parameters.Add("@template", SqlDbType.NVarChar, -1);
                             param.Value = templateString;
                             insertCmd.ExecuteNonQuery();
-                           // Console.WriteLine("Data Inserted Succesfully!");
-                        }                      
+                        }
                     }
+
+                    conn.Close();
                 }
-                conn.Close();
-            }
-            Console.WriteLine("Completely Done!");
+            });
+            MessageBox.Show("Completely Done!");
+            stopwatch.Stop();
+            MessageBox.Show("Normal DTW--- Elapsed Time in sec: " + stopwatch.Elapsed.TotalSeconds + " s");
         }
         private void button1_Click(object sender, EventArgs e)
         {

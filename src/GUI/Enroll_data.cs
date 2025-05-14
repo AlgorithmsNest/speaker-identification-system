@@ -36,7 +36,7 @@ namespace Recorder
             string dbPath = Path.Combine(trimmedRoot, "GUI", "voice_enrollment_data.mdf");
             //Debug Path
             //string dbPath = Path.Combine(projectRoot,"GUI","voice_enrollment_data.mdf");
-            Console.WriteLine(dbPath);
+           // Console.WriteLine(dbPath);
             connectionString = $@"Data Source=(localdb)\MSSQLLocalDB;AttachDbFilename={dbPath};Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
         }
 
@@ -178,6 +178,11 @@ namespace Recorder
             GUI mainForm = new GUI();
             mainForm.Show();
             this.Hide();
+        }
+
+        private void Enroll_data_Load(object sender, EventArgs e)
+        {
+
         }
     }
 }
