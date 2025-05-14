@@ -51,6 +51,7 @@
             this.label1 = new System.Windows.Forms.Label();
             this.width_label = new System.Windows.Forms.Label();
             this.width_box = new System.Windows.Forms.TextBox();
+            this.testCase_box = new System.Windows.Forms.ComboBox();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).BeginInit();
             this.SuspendLayout();
@@ -248,7 +249,7 @@
             "Beam(Time sync)"});
             this.function_box.Location = new System.Drawing.Point(402, 143);
             this.function_box.Name = "function_box";
-            this.function_box.Size = new System.Drawing.Size(121, 24);
+            this.function_box.Size = new System.Drawing.Size(139, 24);
             this.function_box.TabIndex = 24;
             this.function_box.SelectedIndexChanged += new System.EventHandler(this.function_box_SelectedIndexChanged);
             // 
@@ -277,11 +278,24 @@
             this.width_box.Size = new System.Drawing.Size(98, 22);
             this.width_box.TabIndex = 27;
             // 
+            // testCase_box
+            // 
+            this.testCase_box.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.testCase_box.FormattingEnabled = true;
+            this.testCase_box.Items.AddRange(new object[] {
+            "Sample(Case 1)",
+            "Sample(Case 2)"});
+            this.testCase_box.Location = new System.Drawing.Point(402, 41);
+            this.testCase_box.Name = "testCase_box";
+            this.testCase_box.Size = new System.Drawing.Size(121, 24);
+            this.testCase_box.TabIndex = 28;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(553, 222);
+            this.Controls.Add(this.testCase_box);
             this.Controls.Add(this.width_box);
             this.Controls.Add(this.width_label);
             this.Controls.Add(this.label1);
@@ -333,5 +347,6 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label width_label;
         private System.Windows.Forms.TextBox width_box;
+        private System.Windows.Forms.ComboBox testCase_box;
     }
 }

@@ -372,7 +372,8 @@ namespace Recorder
             {
                 double dist = DTW.EuclideanDistance(inputFrame, Template[j - 1]);
 
-                double minPrev = Math.Min(prevRow[j], prevRow[j - 1]);
+                double minPrev = prevRow[j];
+                if (j >= 1) minPrev = Math.Min(minPrev, prevRow[j - 1]);
                 if (j >= 2)
                     minPrev = Math.Min(minPrev, prevRow[j - 2]);
 

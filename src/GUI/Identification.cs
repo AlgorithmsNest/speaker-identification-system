@@ -275,7 +275,10 @@ namespace Recorder
                 //Open the selected audio file
 
                 signal = AudioOperations.OpenAudioFile(path);
-                //signal = AudioOperations.RemoveSilence(signal);
+                if (testCase_box.Text == "Sample(Case 1)")
+                {
+                    signal = AudioOperations.RemoveSilence(signal);
+                }
                 seq = AudioOperations.ExtractFeatures(signal);
                 for (int i = 0; i < seq.Frames.Length; i++)
                 {
@@ -337,22 +340,23 @@ namespace Recorder
                     return;
                 }
                 var inputFrames = seq.Frames;
-                
 
+                //usernames of sample traning sets
+               
                 var templates = new Dictionary<string, MFCCFrame[]>();
-
                 using (var conn = new SqlConnection(connectionString))
                 {
                     conn.Open();
-                    string sql = "SELECT user_name, template_sequence FROM voice_templates";
+                    string sql = "SELECT user_name, template_sequence FROM voice_templates";                  
                     using (var cmd = new SqlCommand(sql, conn))
                     using (var reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())
                         {
                             string user = reader.GetString(0);
-                            string templateString = reader.GetString(1);
+                            string templateString = reader.GetString(1);                                                                                 
                             templates[user] = ParseTemplate(templateString);
+                            
                         }
                     }
                 }
@@ -444,8 +448,9 @@ namespace Recorder
             fileDialog.ShowDialog();
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
-            var hobba = TestcaseLoader.LoadTestcase1Testing(fileDialog.FileName);           
-            
+            var hobba = TestcaseLoader.LoadTestcase1Testing(fileDialog.FileName);
+           
+
             var templates = new Dictionary<string, MFCCFrame[]>();
             List<string> bestMatches= new List<string>();
             if ((function_box.Text == "Pruning(Search Path)" || function_box.Text == "Pruning(Path cost)") && string.IsNullOrWhiteSpace(width_box.Text))
@@ -464,10 +469,17 @@ namespace Recorder
                     {
                         string user = reader.GetString(0);
                         string templateString = reader.GetString(1);
-                        //if (hobba.Any(h => h.UserName == user))
-                        
-                        templates[user] = ParseTemplate(templateString);
-                        
+                        if (testCase_box.Text == "Complete")
+                        {
+                            if (hobba.Any(h => h.UserName == user))
+                            {
+                                templates[user] = ParseTemplate(templateString);
+                            }
+                        }                     
+                        else
+                        {
+                            templates[user] = ParseTemplate(templateString);
+                        }
                     }
                 }
             }
@@ -528,10 +540,10 @@ namespace Recorder
                 }
                 
             }    
+            stopwatch.Stop();
             double acc = TestcaseLoader.CheckTestcaseAccuracy(hobba,bestMatches);
             double testAcc = (1 - acc) * 100;
             MessageBox.Show("Accuracy = " + testAcc);
-            stopwatch.Stop();
             MessageBox.Show("Normal DTW--- Elapsed Time in sec: " + stopwatch.Elapsed.TotalSeconds + " s");
         }
 

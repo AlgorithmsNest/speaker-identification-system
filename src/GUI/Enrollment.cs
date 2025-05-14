@@ -16,6 +16,7 @@ using System.Data;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using NAudio.Wave;
 
 namespace Recorder
 {
@@ -313,13 +314,32 @@ namespace Recorder
             {
                 isRecorded = false;
                 path = open.FileName;
-               
-                
+
+
                 //Open the selected audio file
 
+                Console.WriteLine("Opening File");
                 signal = AudioOperations.OpenAudioFile(path);
-                signal = AudioOperations.RemoveSilence(signal);
-                 seq = AudioOperations.ExtractFeatures(signal);
+                Console.WriteLine("Done!");
+                try
+                {
+                    Console.WriteLine("Removing Silence");
+                    if(testCase_box.Text == "Sample(Case 1)")
+                    {
+                        signal = AudioOperations.RemoveSilence(signal);
+                    }
+                    Console.WriteLine("Done!");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Error during RemoveSilence: " + ex.Message);
+                    MessageBox.Show("Error: " + ex.Message);
+                    return;
+                }
+
+                Console.WriteLine("Extracting Features");
+                seq = AudioOperations.ExtractFeatures(signal);
+                Console.WriteLine("Done!");
                 for (int i = 0; i < seq.Frames.Length; i++)
                 {
                     for (int j = 0; j < 13; j++)
@@ -342,34 +362,40 @@ namespace Recorder
 
         private void btnAdd_Click(object sender, EventArgs e)
         {           
-            if ((this.encoder != null || this.decoder != null) && !string.IsNullOrWhiteSpace(username_text) && isSaved)
+            if ((this.encoder != null || this.decoder != null) && !string.IsNullOrWhiteSpace(username_text))// && isSaved)
             {
                 //Dynamic Path                             
                 using (var conn = new SqlConnection(connectionString))
                 {
                     conn.Open();
-                    
-                    Console.WriteLine("Opening File");
-                    signal = AudioOperations.OpenAudioFile(path);
-                    Console.WriteLine("Done!");
-                    try
-                    {
-                        Console.WriteLine("Removing Silence");
-                        signal = AudioOperations.RemoveSilence(signal);
-                        Console.WriteLine("Done!");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine("Error during RemoveSilence: " + ex.Message);
-                        MessageBox.Show("Error: " + ex.Message);
-                        return;
-                    }
-
-                    Console.WriteLine("Extracting Features");
-                    seq = AudioOperations.ExtractFeatures(signal);
-                    Console.WriteLine("Done!");
-
                     // Serialize features
+                    if (isRecorded)
+                    {
+                        try
+                        {
+                            // Convert stream to AudioSignal
+                            this.encoder.stream.Seek(0, SeekOrigin.Begin);
+
+                            WaveDecoder waveDecoder = new WaveDecoder(this.encoder.stream);
+                            signal = new AudioSignal();
+                            signal.sampleRate = waveDecoder.SampleRate;
+                            signal.signalLengthInMilliSec = (int)((double)waveDecoder.Frames / waveDecoder.SampleRate * 1000.0);
+
+                            Signal tempSignal = waveDecoder.Decode(waveDecoder.Frames);
+                            signal.data = new double[waveDecoder.Frames];
+                            tempSignal.CopyTo(signal.data);
+
+                            // Remove silence
+                            signal = AudioOperations.RemoveSilence(signal);
+
+                            // Extract features
+                            seq = AudioOperations.ExtractFeatures(signal);
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine(ex.ToString());
+                        }
+                    }
                     double[][] features = new double[seq.Frames.Length][];
                     for (int i = 0; i < seq.Frames.Length; i++)
                         features[i] = seq.Frames[i].Features;
@@ -394,13 +420,14 @@ namespace Recorder
                         Console.WriteLine("Data Inserted Succesfully!");
                     }
                     MessageBox.Show("Data Inserted Succesfully!");
-                    btnAdd.Enabled = false;                    
+                    btnAdd.Enabled = false;     
+                    btnPlay.Enabled = false;
                 }
             }
-            else if (!isSaved)
+           /* else if (!isSaved)
             {
                 MessageBox.Show("Please Save the Record First!");
-            }
+            }*/
             else
             {
                 MessageBox.Show("Null occured");

@@ -52,6 +52,7 @@
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.button1 = new System.Windows.Forms.Button();
+            this.testCase_box = new System.Windows.Forms.ComboBox();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).BeginInit();
             this.SuspendLayout();
@@ -82,26 +83,26 @@
             // openToolStripMenuItem
             // 
             this.openToolStripMenuItem.Name = "openToolStripMenuItem";
-            this.openToolStripMenuItem.Size = new System.Drawing.Size(128, 26);
+            this.openToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
             this.openToolStripMenuItem.Text = "Open";
             this.openToolStripMenuItem.Click += new System.EventHandler(this.openToolStripMenuItem_Click);
             // 
             // saveToolStripMenuItem
             // 
             this.saveToolStripMenuItem.Name = "saveToolStripMenuItem";
-            this.saveToolStripMenuItem.Size = new System.Drawing.Size(128, 26);
+            this.saveToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
             this.saveToolStripMenuItem.Text = "Save";
             this.saveToolStripMenuItem.Click += new System.EventHandler(this.saveToolStripMenuItem_Click);
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(125, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(221, 6);
             // 
             // closeToolStripMenuItem
             // 
             this.closeToolStripMenuItem.Name = "closeToolStripMenuItem";
-            this.closeToolStripMenuItem.Size = new System.Drawing.Size(128, 26);
+            this.closeToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
             this.closeToolStripMenuItem.Text = "Close";
             this.closeToolStripMenuItem.Click += new System.EventHandler(this.closeToolStripMenuItem_Click);
             // 
@@ -246,11 +247,24 @@
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
+            // testCase_box
+            // 
+            this.testCase_box.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.testCase_box.FormattingEnabled = true;
+            this.testCase_box.Items.AddRange(new object[] {
+            "Sample(Case 1)",
+            "Sample(Case 2)"});
+            this.testCase_box.Location = new System.Drawing.Point(112, 4);
+            this.testCase_box.Name = "testCase_box";
+            this.testCase_box.Size = new System.Drawing.Size(121, 24);
+            this.testCase_box.TabIndex = 29;
+            // 
             // Enrollment
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(120F, 120F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.ClientSize = new System.Drawing.Size(404, 223);
+            this.Controls.Add(this.testCase_box);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.lbLength);
             this.Controls.Add(this.lbPosition);
@@ -295,5 +309,6 @@
         private System.Windows.Forms.Button btnRecord;
         private System.Windows.Forms.ToolStripMenuItem loadTrain1ToolStripMenuItem;
         private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.ComboBox testCase_box;
     }
 }
