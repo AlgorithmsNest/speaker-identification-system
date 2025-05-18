@@ -276,7 +276,7 @@ namespace Recorder
                 //Open the selected audio file
 
                 signal = AudioOperations.OpenAudioFile(path);
-                if (testCase_box.Text == "Sample(Case 1)")
+                if (testCase_box.Text != "Sample(Case 2)")
                 {
                     signal = AudioOperations.RemoveSilence(signal);
                 }
@@ -462,8 +462,8 @@ namespace Recorder
             OpenFileDialog fileDialog = new OpenFileDialog();
             fileDialog.ShowDialog();
 
-            Stopwatch stopwatch = new Stopwatch();
-            stopwatch.Start();
+            Stopwatch stopwatch_total = new Stopwatch();
+            stopwatch_total.Start();
             var hobba = TestcaseLoader.LoadTestcase1Testing(fileDialog.FileName);
 
             //var templates = new Dictionary<string, MFCCFrame[]>(); // VALUE IS UNIQUE IN MAP PER KEY SO IT ONLY STORE ONE VOICE (frames of voice) for each unique user 
@@ -475,6 +475,9 @@ namespace Recorder
                 MessageBox.Show("Please add the width first.");
                 return;
             }
+            
+            Stopwatch sw_loading_training= new Stopwatch();
+            sw_loading_training.Start();
             using (var conn = new SqlConnection(connectionString))
             {
                 conn.Open();
@@ -510,6 +513,11 @@ namespace Recorder
                     }
                 }
             }
+            sw_loading_training.Stop();
+            Console.WriteLine("Elapsed Time in sec for loading testing data: " + sw_loading_training.Elapsed.TotalSeconds + " s");
+
+            Stopwatch sw_matching = new Stopwatch();   
+            sw_matching.Start();
             for (int i = 0; i < hobba.Count; i++)
             {
                 //var hobba[i] = hobba[i];
@@ -554,9 +562,12 @@ namespace Recorder
                 
                 }
                 
-            }    
-            stopwatch.Stop();
-            Console.WriteLine("Elapsed Time in sec for loading testing data and matching: " + stopwatch.Elapsed.TotalSeconds + " s");
+            }
+            sw_matching.Stop();
+            Console.WriteLine("Elapsed Time in sec for matching testing data: " + sw_matching.Elapsed.TotalSeconds + " s");
+
+            stopwatch_total.Stop();
+            Console.WriteLine("Elapsed Time in sec for loading testing data and matching: " + stopwatch_total.Elapsed.TotalSeconds + " s");
             double error = TestcaseLoader.CheckTestcaseAccuracy(hobba,bestMatches);
             double testAcc = (1 - error) * 100;
             MessageBox.Show("Accuracy = " + testAcc);
@@ -575,6 +586,6 @@ namespace Recorder
             }
         }
 
-        
+       
     }
 }

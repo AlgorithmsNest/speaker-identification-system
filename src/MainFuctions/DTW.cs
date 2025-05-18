@@ -156,22 +156,67 @@ namespace Recorder
         public static double PruningLimitngSearchPath(MFCCFrame[] input, MFCCFrame[] template, int Width)
         {
 
-            var DiagonalContainer = new Dictionary<(int, int), double>(); //DP [(i,j), DpVal]
-            if (Width % 2 == 0)
-            {
-                Width++;
-            }
+            //var DiagonalContainer = new Dictionary<(int, int), double>(); //DP [(i,j), DpVal]
+            
+            int InputFramesNO = input.Length; // rows 
+            int TemplateFramesNo = template.Length; // cols
+            //Width = Math.Max(Width, Math.Abs(InputFramesNO - TemplateFramesNo)); // don't know -2 or not bs azon msh htfrk aslun same result
+            //Width = Math.Max(Width, 2 * Math.Abs(InputFramesNO - TemplateFramesNo));
+            //Width = Math.Abs(InputFramesNO - TemplateFramesNo) + Width;
+            //Width = Math.Abs(InputFramesNO - TemplateFramesNo) + (2 * Width);
+
+            // if width is even so it's divisible by 2 so it's valid 
+            // the problem is when witdh is odd we want to make it even (have 2 options increment it by 1 or decrement it by 1)
+            // if width is odd and dividing it by 2 (integer division) it's like that you decremented it explicitely 5/2 = 2 ==> 4/2 = 2
+
+            // that if we increment it
+            //if (Width % 2 != 0)
+            //{
+            //    Width++;
+            //Width--;
+            //}
+
+
+
+            // NEW 
+            var prev = new Dictionary<int, double>(); // represents column number in previous row
+            var curr = new Dictionary<int, double>(); // represents column number in current row
+            Width = Math.Max(Width, 2 * Math.Abs(InputFramesNO - TemplateFramesNo));
+            //if (Width % 2 != 0)
+            //    Width++;
             int HalfWidth = Width / 2;
-            for (int TempalteFrame = 0; TempalteFrame <= HalfWidth; TempalteFrame++)
+            //HalfWidth = Math.Max(HalfWidth, Math.Abs(InputFramesNO - TemplateFramesNo));
+
+            // NEW
+
+
+            // like if we add extra col and row with infinity and cel(0,0) by 0
+            // I will simulate it without doing it 
+            // I work zero based 
+
+            // FOR TESTING 
+
+            //Console.WriteLine("No of rows (Input frames): " + InputFramesNO);
+            //Console.WriteLine("No of columns (Template frames): " + TemplateFramesNo);
+            //Console.WriteLine("Pruning width: " + Width);
+            //Console.WriteLine("Half width: " + HalfWidth);
+
+            // FOR TESTING 
+            //DiagonalContainer[(0, 0)] = DTW.EuclideanDistance(input[0], template[0]);
+            prev[0] = DTW.EuclideanDistance(input[0], template[0]);
+            if (TemplateFramesNo > 1) // to check not out of boundary 
+                prev[1] = DTW.EuclideanDistance(input[0], template[1]);
+           
+            for (int TemplateFrame = 2; TemplateFrame <= HalfWidth && TemplateFrame < TemplateFramesNo; TemplateFrame++)
             {
-                DiagonalContainer[(0, TempalteFrame)] = DTW.EuclideanDistance(input[0], template[TempalteFrame]);
+                prev[TemplateFrame] = INF; // invalid transitions 
             }
-            int InputFramesNO = input.Length;
-            int TemplateFramesNo = template.Length;
+            
             for (int InputFrame = 1; InputFrame < InputFramesNO; InputFrame++)
             {
                 int StartColumn = Math.Max(0, InputFrame - HalfWidth);
                 int EndColumn = Math.Min(TemplateFramesNo - 1, InputFrame + HalfWidth);
+                curr = new Dictionary<int, double>();
                 for (int TemplateFrame = StartColumn; TemplateFrame <= EndColumn; TemplateFrame++)
                 {
                     double choice1 = INF; //corresponding
@@ -180,25 +225,49 @@ namespace Recorder
 
                     if (TemplateFrame - 1 >= 0)
                     {  //Avoiding out of matrix corresponding
-                        choice1 = DiagonalContainer[(InputFrame - 1, TemplateFrame - 1)];
+                        choice1 = prev[TemplateFrame - 1];
                     }
                     if (TemplateFrame != EndColumn) //Avoiding out of the diagonal region
                     {
-                        choice2 = DiagonalContainer[(InputFrame - 1, TemplateFrame)];
+                        choice2 = prev[TemplateFrame];
                     }
                     if (TemplateFrame - 2 >= 0 && TemplateFrame != StartColumn) //Avoiding out of matrix corresponding and out of the diagonal region
                     {
-                        choice3 = DiagonalContainer[(InputFrame - 1, TemplateFrame - 2)];
+                        choice3 = prev[TemplateFrame - 2];
                     }
 
-                    DiagonalContainer[(InputFrame, TemplateFrame)] = Math.Min(choice1, Math.Min(choice2, choice3)) +
+                    /*if(choice1 == INF && choice2 == INF && choice3 == INF)
+                    {
+                        DiagonalContainer[(InputFrame, TemplateFrame)] = INF; // to avoid overflow cuz it will be INF + distance
+                    }*/
+                    //else
+                    //{
+                    curr[TemplateFrame] = Math.Min(choice1, Math.Min(choice2, choice3)) +
                         DTW.EuclideanDistance(input[InputFrame], template[TemplateFrame]);
+                    //}
+                    
+                }
+
+                prev = new Dictionary<int, double>();
+                // move curr to prev
+                foreach(var kvp in curr)
+                {
+                    prev[kvp.Key] = kvp.Value;
                 }
 
             }
-            if (DiagonalContainer.ContainsKey((InputFramesNO - 1, TemplateFramesNo - 1)))
+            // FOR TESTING
+            //Console.WriteLine("Size of map(Number of elements) : " + DiagonalContainer.Count);
+            //Console.WriteLine("DP[n][n]: " + DiagonalContainer[(InputFramesNO - 1, InputFramesNO - 1)]); // main diagonal i = j
+            //Console.WriteLine("DP[n][EndCol]: " + DiagonalContainer[(InputFramesNO - 1, Math.Min(TemplateFramesNo - 1 , InputFramesNO - 1 + HalfWidth))]);
+            /*foreach(var kvp in DiagonalContainer)
             {
-                return DiagonalContainer[(InputFramesNO - 1, TemplateFramesNo - 1)];
+                Console.WriteLine("(" + kvp.Key.Item1 + "," + kvp.Key.Item2 + ")" + " = " + kvp.Value);
+            }*/
+            // FOR TESTING
+            if (prev.ContainsKey(TemplateFramesNo - 1))
+            {
+                return prev[TemplateFramesNo - 1];
             }
             return INF;
         }
@@ -331,8 +400,9 @@ namespace Recorder
 
             }
             stopwatch.Stop();
-            Console.WriteLine("Pruning Search Path--- Elapsed Time in ms: " + stopwatch.ElapsedMilliseconds + " ms");
-            Console.WriteLine("Pruning Search Path--- Elapsed Time in sec: " + stopwatch.Elapsed.TotalSeconds + " s");
+            // comment it in Complete testing
+            //Console.WriteLine("Pruning Search Path--- Elapsed Time in ms: " + stopwatch.ElapsedMilliseconds + " ms");
+            //Console.WriteLine("Pruning Search Path--- Elapsed Time in sec: " + stopwatch.Elapsed.TotalSeconds + " s");
             return (bestMatch,minDistance);
         }
 

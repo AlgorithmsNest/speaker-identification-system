@@ -65,7 +65,6 @@
             this.Name_box.Name = "Name_box";
             this.Name_box.Size = new System.Drawing.Size(143, 22);
             this.Name_box.TabIndex = 22;
-            
             // 
             // Name_label
             // 
@@ -190,19 +189,19 @@
             // openToolStripMenuItem
             // 
             this.openToolStripMenuItem.Name = "openToolStripMenuItem";
-            this.openToolStripMenuItem.Size = new System.Drawing.Size(128, 26);
+            this.openToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
             this.openToolStripMenuItem.Text = "Open";
             this.openToolStripMenuItem.Click += new System.EventHandler(this.openToolStripMenuItem_Click);
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(125, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(221, 6);
             // 
             // closeToolStripMenuItem
             // 
             this.closeToolStripMenuItem.Name = "closeToolStripMenuItem";
-            this.closeToolStripMenuItem.Size = new System.Drawing.Size(128, 26);
+            this.closeToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
             this.closeToolStripMenuItem.Text = "Close";
             // 
             // optionsToolStripMenuItem
@@ -216,7 +215,7 @@
             // loadTrain1ToolStripMenuItem
             // 
             this.loadTrain1ToolStripMenuItem.Name = "loadTrain1ToolStripMenuItem";
-            this.loadTrain1ToolStripMenuItem.Size = new System.Drawing.Size(163, 26);
+            this.loadTrain1ToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
             this.loadTrain1ToolStripMenuItem.Text = "Load Test1";
             this.loadTrain1ToolStripMenuItem.Click += new System.EventHandler(this.loadTrain1ToolStripMenuItem_Click_1);
             // 
@@ -286,12 +285,12 @@
             this.testCase_box.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.testCase_box.FormattingEnabled = true;
             this.testCase_box.Items.AddRange(new object[] {
-            "Sample(Case 1)",
             "Sample(Case 2)"});
             this.testCase_box.Location = new System.Drawing.Point(402, 41);
             this.testCase_box.Name = "testCase_box";
             this.testCase_box.Size = new System.Drawing.Size(121, 24);
             this.testCase_box.TabIndex = 28;
+           
             // 
             // matchedWith
             // 

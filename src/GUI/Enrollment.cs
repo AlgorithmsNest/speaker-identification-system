@@ -324,7 +324,7 @@ namespace Recorder
                 try
                 {
                     Console.WriteLine("Removing Silence");
-                    if(testCase_box.Text == "Sample(Case 1)")
+                    if(testCase_box.Text != "Sample(Case 2)")
                     {
                         signal = AudioOperations.RemoveSilence(signal);
                     }
@@ -386,7 +386,11 @@ namespace Recorder
                             tempSignal.CopyTo(signal.data);
 
                             // Remove silence
-                            signal = AudioOperations.RemoveSilence(signal);
+                            if (testCase_box.Text != "Sample(Case 2)")
+                            {
+                                signal = AudioOperations.RemoveSilence(signal);
+                            }
+                            
 
                             // Extract features
                             seq = AudioOperations.ExtractFeatures(signal);
@@ -527,6 +531,8 @@ namespace Recorder
             Enroll_data mainForm = new Enroll_data();
             mainForm.Show();
             this.Hide();
-        }       
+        }
+
+        
     }
 }
