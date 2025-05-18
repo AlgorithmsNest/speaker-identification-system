@@ -203,13 +203,15 @@ namespace Recorder
 
             // FOR TESTING 
             //DiagonalContainer[(0, 0)] = DTW.EuclideanDistance(input[0], template[0]);
-            prev[0] = DTW.EuclideanDistance(input[0], template[0]);
+
+            /*prev[0] = DTW.EuclideanDistance(input[0], template[0]);
             if (TemplateFramesNo > 1) // to check not out of boundary 
-                prev[1] = DTW.EuclideanDistance(input[0], template[1]);
+                prev[1] = DTW.EuclideanDistance(input[0], template[1]);*/
            
-            for (int TemplateFrame = 2; TemplateFrame <= HalfWidth && TemplateFrame < TemplateFramesNo; TemplateFrame++)
+            for (int TemplateFrame = 0; TemplateFrame <= HalfWidth && TemplateFrame < TemplateFramesNo; TemplateFrame++)
             {
-                prev[TemplateFrame] = INF; // invalid transitions 
+                //prev[TemplateFrame] = INF; // invalid transitions 
+                prev[TemplateFrame] = DTW.EuclideanDistance(input[0], template[TemplateFrame]);
             }
             
             for (int InputFrame = 1; InputFrame < InputFramesNO; InputFrame++)
@@ -236,15 +238,15 @@ namespace Recorder
                         choice3 = prev[TemplateFrame - 2];
                     }
 
-                    /*if(choice1 == INF && choice2 == INF && choice3 == INF)
+                    if(choice1 == INF && choice2 == INF && choice3 == INF)
                     {
-                        DiagonalContainer[(InputFrame, TemplateFrame)] = INF; // to avoid overflow cuz it will be INF + distance
-                    }*/
-                    //else
-                    //{
+                        curr[TemplateFrame] = INF; // to avoid overflow cuz it will be INF + distance , WE CAN -> "DON"T PUSH IT INTO MAP THIS TEMPLATE FRAME"
+                    }
+                    else
+                    {
                     curr[TemplateFrame] = Math.Min(choice1, Math.Min(choice2, choice3)) +
                         DTW.EuclideanDistance(input[InputFrame], template[TemplateFrame]);
-                    //}
+                    }
                     
                 }
 
