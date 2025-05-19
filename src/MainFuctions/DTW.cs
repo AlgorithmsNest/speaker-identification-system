@@ -157,105 +157,69 @@ namespace Recorder
         {
 
             //var DiagonalContainer = new Dictionary<(int, int), double>(); //DP [(i,j), DpVal]
-            
+
             int InputFramesNO = input.Length; // rows 
             int TemplateFramesNo = template.Length; // cols
-            //Width = Math.Max(Width, Math.Abs(InputFramesNO - TemplateFramesNo)); // don't know -2 or not bs azon msh htfrk aslun same result
-            //Width = Math.Max(Width, 2 * Math.Abs(InputFramesNO - TemplateFramesNo));
-            //Width = Math.Abs(InputFramesNO - TemplateFramesNo) + Width;
-            //Width = Math.Abs(InputFramesNO - TemplateFramesNo) + (2 * Width);
-
-            // if width is even so it's divisible by 2 so it's valid 
-            // the problem is when witdh is odd we want to make it even (have 2 options increment it by 1 or decrement it by 1)
-            // if width is odd and dividing it by 2 (integer division) it's like that you decremented it explicitely 5/2 = 2 ==> 4/2 = 2
-
-            // that if we increment it
-            //if (Width % 2 != 0)
-            //{
-            //    Width++;
-            //Width--;
-            //}
-
+            if (InputFramesNO == 0 || TemplateFramesNo == 0)
+                return INF;
 
 
             // NEW 
             var prev = new Dictionary<int, double>(); // represents column number in previous row
             var curr = new Dictionary<int, double>(); // represents column number in current row
-            Width = Math.Max(Width, 2 * Math.Abs(InputFramesNO - TemplateFramesNo));
-            //if (Width % 2 != 0)
-            //    Width++;
             int HalfWidth = Width / 2;
-            //HalfWidth = Math.Max(HalfWidth, Math.Abs(InputFramesNO - TemplateFramesNo));
-
-            // NEW
+            HalfWidth = Math.Max(HalfWidth, Math.Abs(InputFramesNO - TemplateFramesNo));
 
 
-            // like if we add extra col and row with infinity and cel(0,0) by 0
-            // I will simulate it without doing it 
-            // I work zero based 
+            for (int TemplateFrame = 0; TemplateFrame <= HalfWidth && TemplateFrame <= TemplateFramesNo; TemplateFrame++)
+                prev[TemplateFrame] = INF;
+            prev[0] = 0;
 
-            // FOR TESTING 
-
-            //Console.WriteLine("No of rows (Input frames): " + InputFramesNO);
-            //Console.WriteLine("No of columns (Template frames): " + TemplateFramesNo);
-            //Console.WriteLine("Pruning width: " + Width);
-            //Console.WriteLine("Half width: " + HalfWidth);
-
-            // FOR TESTING 
-            //DiagonalContainer[(0, 0)] = DTW.EuclideanDistance(input[0], template[0]);
-
-            /*prev[0] = DTW.EuclideanDistance(input[0], template[0]);
-            if (TemplateFramesNo > 1) // to check not out of boundary 
-                prev[1] = DTW.EuclideanDistance(input[0], template[1]);*/
-           
-            for (int TemplateFrame = 0; TemplateFrame <= HalfWidth && TemplateFrame < TemplateFramesNo; TemplateFrame++)
+            for (int InputFrame = 1; InputFrame <= InputFramesNO; InputFrame++)
             {
-                //prev[TemplateFrame] = INF; // invalid transitions 
-                prev[TemplateFrame] = DTW.EuclideanDistance(input[0], template[TemplateFrame]);
-            }
-            
-            for (int InputFrame = 1; InputFrame < InputFramesNO; InputFrame++)
-            {
-                int StartColumn = Math.Max(0, InputFrame - HalfWidth);
-                int EndColumn = Math.Min(TemplateFramesNo - 1, InputFrame + HalfWidth);
-                curr = new Dictionary<int, double>();
+                int StartColumn = Math.Max(1, InputFrame - HalfWidth);
+                int EndColumn = Math.Min(TemplateFramesNo, InputFrame + HalfWidth);
+                curr.Clear();
+                for (int j = StartColumn; j <= EndColumn; j++)
+                    curr[j] = double.PositiveInfinity;
                 for (int TemplateFrame = StartColumn; TemplateFrame <= EndColumn; TemplateFrame++)
                 {
                     double choice1 = INF; //corresponding
                     double choice2 = INF; //stretching
                     double choice3 = INF; //shrinking
 
-                    if (TemplateFrame - 1 >= 0)
+                    if (prev.ContainsKey(TemplateFrame - 1))
                     {  //Avoiding out of matrix corresponding
                         choice1 = prev[TemplateFrame - 1];
                     }
-                    if (TemplateFrame != EndColumn) //Avoiding out of the diagonal region
+                    if (prev.ContainsKey(TemplateFrame)) //Avoiding out of the diagonal region
                     {
                         choice2 = prev[TemplateFrame];
                     }
-                    if (TemplateFrame - 2 >= 0 && TemplateFrame != StartColumn) //Avoiding out of matrix corresponding and out of the diagonal region
+                    if (prev.ContainsKey(TemplateFrame - 2) && TemplateFrame != StartColumn) //Avoiding out of matrix corresponding and out of the diagonal region
                     {
                         choice3 = prev[TemplateFrame - 2];
                     }
 
-                    if(choice1 == INF && choice2 == INF && choice3 == INF)
+                    if (choice1 == INF && choice2 == INF && choice3 == INF)
                     {
-                        curr[TemplateFrame] = INF; // to avoid overflow cuz it will be INF + distance , WE CAN -> "DON"T PUSH IT INTO MAP THIS TEMPLATE FRAME"
+                        curr[TemplateFrame] = INF; // to avoid overflow cuz it will be INF + distance
                     }
                     else
                     {
-                    curr[TemplateFrame] = Math.Min(choice1, Math.Min(choice2, choice3)) +
-                        DTW.EuclideanDistance(input[InputFrame], template[TemplateFrame]);
+                        curr[TemplateFrame] = Math.Min(choice1, Math.Min(choice2, choice3)) +
+                            DTW.EuclideanDistance(input[InputFrame - 1], template[TemplateFrame - 1]);
                     }
-                    
+
                 }
 
-                prev = new Dictionary<int, double>();
-                // move curr to prev
-                foreach(var kvp in curr)
-                {
-                    prev[kvp.Key] = kvp.Value;
-                }
+                /* prev = new Dictionary<int, double>();
+                 // move curr to prev
+                 foreach (var kvp in curr)
+                 {
+                     prev[kvp.Key] = kvp.Value;
+                 }*/
+                prev = new Dictionary<int, double>(curr);
 
             }
             // FOR TESTING
@@ -267,9 +231,9 @@ namespace Recorder
                 Console.WriteLine("(" + kvp.Key.Item1 + "," + kvp.Key.Item2 + ")" + " = " + kvp.Value);
             }*/
             // FOR TESTING
-            if (prev.ContainsKey(TemplateFramesNo - 1))
+            if (prev.ContainsKey(TemplateFramesNo))
             {
-                return prev[TemplateFramesNo - 1];
+                return prev[TemplateFramesNo];
             }
             return INF;
         }
