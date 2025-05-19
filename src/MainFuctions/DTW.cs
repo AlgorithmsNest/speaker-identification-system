@@ -12,7 +12,7 @@ namespace Recorder
 {
     public static class DTW
     {
-        public static double EuclideanDistance(MFCCFrame a, MFCCFrame b)
+        internal static double EuclideanDistance(MFCCFrame a, MFCCFrame b)
         {
             /*if (a?.Features == null || b?.Features == null)
             {
