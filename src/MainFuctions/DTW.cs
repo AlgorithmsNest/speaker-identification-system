@@ -163,87 +163,73 @@ namespace Recorder
         const double INF = double.PositiveInfinity;
         public static double PruningLimitngSearchPath(MFCCFrame[] input, MFCCFrame[] template, int Width)
         {
+            const double INF = double.PositiveInfinity;
+            int InputFramesNO = input.Length;
+            int TemplateFramesNo = template.Length;
 
-            //var DiagonalContainer = new Dictionary<(int, int), double>(); //DP [(i,j), DpVal]
-
-            int InputFramesNO = input.Length; // rows 
-            int TemplateFramesNo = template.Length; // cols
             if (InputFramesNO == 0 || TemplateFramesNo == 0)
                 return INF;
 
+            int HalfWidth = Math.Max(Width / 2, Math.Abs(InputFramesNO - TemplateFramesNo));
 
-            // NEW 
-            var prev = new Dictionary<int, double>(); // represents column number in previous row
-            var curr = new Dictionary<int, double>(); // represents column number in current row
-            int HalfWidth = Width / 2;
-            HalfWidth = Math.Max(HalfWidth, Math.Abs(InputFramesNO - TemplateFramesNo));
+            // Initialize previous array InputFrame = 0
+            int prevStart = 0;
+            int prevEnd = Math.Min(HalfWidth, TemplateFramesNo);
+            double[] prev = new double[prevEnd - prevStart + 1];
 
 
-            for (int TemplateFrame = 0; TemplateFrame <= HalfWidth && TemplateFrame <= TemplateFramesNo; TemplateFrame++)
-                prev[TemplateFrame] = INF;
+            for (int i = 1; i < prev.Length; i++)
+                prev[i] = INF;
+
             prev[0] = 0;
 
             for (int InputFrame = 1; InputFrame <= InputFramesNO; InputFrame++)
             {
-                int StartColumn = Math.Max(1, InputFrame - HalfWidth);
-                int EndColumn = Math.Min(TemplateFramesNo, InputFrame + HalfWidth);
-                curr.Clear();
-                for (int j = StartColumn; j <= EndColumn; j++)
-                    curr[j] = double.PositiveInfinity;
-                for (int TemplateFrame = StartColumn; TemplateFrame <= EndColumn; TemplateFrame++)
+                int currStart = Math.Max(1, InputFrame - HalfWidth);
+                int currEnd = Math.Min(TemplateFramesNo, InputFrame + HalfWidth);
+
+                int window = currEnd - currStart + 1;
+                double[] curr = new double[window];
+
+
+                for (int i = 0; i < curr.Length; i++)
+                    curr[i] = INF;
+
+                for (int TemplateFrame = currStart; TemplateFrame <= currEnd; TemplateFrame++)
                 {
-                    double choice1 = INF; //corresponding
-                    double choice2 = INF; //stretching
-                    double choice3 = INF; //shrinking
+                    double choice1 = INF;
+                    double choice2 = INF;
+                    double choice3 = INF;
 
-                    if (prev.ContainsKey(TemplateFrame - 1))
-                    {  //Avoiding out of matrix corresponding
-                        choice1 = prev[TemplateFrame - 1];
-                    }
-                    if (prev.ContainsKey(TemplateFrame)) //Avoiding out of the diagonal region
-                    {
-                        choice2 = prev[TemplateFrame];
-                    }
-                    if (prev.ContainsKey(TemplateFrame - 2) && TemplateFrame != StartColumn) //Avoiding out of matrix corresponding and out of the diagonal region
-                    {
-                        choice3 = prev[TemplateFrame - 2];
-                    }
+                    int currIndex = TemplateFrame - currStart; //so we are 0 ,1 ,2, ... as usual(mapping to right idx)
 
-                    if (choice1 == INF && choice2 == INF && choice3 == INF)
+                    if (TemplateFrame - 1 >= prevStart && TemplateFrame - 1 <= prevEnd)
+                        choice1 = prev[(TemplateFrame - 1) - prevStart];
+
+                    if (TemplateFrame >= prevStart && TemplateFrame <= prevEnd)
+                        choice2 = prev[TemplateFrame - prevStart];
+
+                    if (TemplateFrame - 2 >= prevStart && TemplateFrame - 2 <= prevEnd)
+                        choice3 = prev[(TemplateFrame - 2) - prevStart];
+
+                    double minChoice = Math.Min(choice1, Math.Min(choice2, choice3));
+                    if (minChoice != INF)
                     {
-                        curr[TemplateFrame] = INF; // to avoid overflow cuz it will be INF + distance
-                    }
-                    else
-                    {
-                        curr[TemplateFrame] = Math.Min(choice1, Math.Min(choice2, choice3)) +
+                        curr[currIndex] = minChoice +
                             DTW.EuclideanDistance(input[InputFrame - 1], template[TemplateFrame - 1]);
                     }
-
                 }
 
-                /* prev = new Dictionary<int, double>();
-                 // move curr to prev
-                 foreach (var kvp in curr)
-                 {
-                     prev[kvp.Key] = kvp.Value;
-                 }*/
-                prev = new Dictionary<int, double>(curr);
+                // Update previous array for next iteration
+                prev = curr;  //no need for temp array here bec curr array will be assigned to new one in the next iteration(new key word so another new address) 
+                prevStart = currStart;
+                prevEnd = currEnd;
+            }
 
-            }
-            // FOR TESTING
-            //Console.WriteLine("Size of map(Number of elements) : " + DiagonalContainer.Count);
-            //Console.WriteLine("DP[n][n]: " + DiagonalContainer[(InputFramesNO - 1, InputFramesNO - 1)]); // main diagonal i = j
-            //Console.WriteLine("DP[n][EndCol]: " + DiagonalContainer[(InputFramesNO - 1, Math.Min(TemplateFramesNo - 1 , InputFramesNO - 1 + HalfWidth))]);
-            /*foreach(var kvp in DiagonalContainer)
-            {
-                Console.WriteLine("(" + kvp.Key.Item1 + "," + kvp.Key.Item2 + ")" + " = " + kvp.Value);
-            }*/
-            // FOR TESTING
-            if (prev.ContainsKey(TemplateFramesNo))
-            {
-                return prev[TemplateFramesNo];
-            }
-            return INF;
+            // Check final result
+            return (prevStart <= TemplateFramesNo && TemplateFramesNo <= prevEnd)
+                ? prev[TemplateFramesNo - prevStart]
+                : INF;
         }
 
         public static double PruningLimitngPathCost(MFCCFrame[] input, MFCCFrame[] template, int BeamWidth)
