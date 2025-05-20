@@ -17,6 +17,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using NAudio.Wave;
+using System.Collections.Concurrent;
 
 namespace Recorder
 {
@@ -41,7 +42,7 @@ namespace Recorder
         private Decoder decoder;
 
         private bool isRecorded;
-        private bool isSaved;
+        //private bool isSaved;
         private string connectionString;
         private string username_text;
         private int id;
@@ -295,7 +296,7 @@ namespace Recorder
         private void saveToolStripMenuItem_Click(object sender, EventArgs e)
         {
             saveFileDialog1.ShowDialog(this);
-            isSaved = true;
+            //isSaved = true;
         }
 
         private void updateTimer_Tick(object sender, EventArgs e)
@@ -350,7 +351,7 @@ namespace Recorder
                     }
                 }
                 updateButtons();
-                isSaved = true;
+                //isSaved = true;
             }
         }
 
@@ -364,6 +365,8 @@ namespace Recorder
         {           
             if ((this.encoder != null || this.decoder != null) && !string.IsNullOrWhiteSpace(username_text))// && isSaved)
             {
+                Stopwatch stopwatch = new Stopwatch();
+                stopwatch.Start();
                 //Dynamic Path                             
                 using (var conn = new SqlConnection(connectionString))
                 {
@@ -426,7 +429,10 @@ namespace Recorder
                     MessageBox.Show("Data Inserted Succesfully!");
                     btnAdd.Enabled = false;     
                     btnPlay.Enabled = false;
+                    conn.Close();
                 }
+                stopwatch.Stop();
+                MessageBox.Show("Normal DTW--- Elapsed Time in sec: " + stopwatch.Elapsed.TotalSeconds + " s");
             }
            /* else if (!isSaved)
             {
@@ -447,82 +453,103 @@ namespace Recorder
 
 
 
-            Parallel.ForEach(hobba, user =>
+            var userIdMap = new ConcurrentDictionary<string, int>();
+            var templateTable = new DataTable();
+
+            templateTable.Columns.Add("user_id", typeof(int));
+            templateTable.Columns.Add("user_name", typeof(string));
+            templateTable.Columns.Add("template_sequence", typeof(string));
+
+            // STEP 1: Fetch or Insert Users and Get their IDs
+            using (var conn = new SqlConnection(connectionString))
             {
-                int currId = 0;
-                // Each thread needs its own SqlConnection
-                using (var conn = new SqlConnection(connectionString))
+                conn.Open();
+
+                foreach (var user in hobba)
                 {
-                    conn.Open();
+                    int userId = 0;
 
-                    string insertSql = "INSERT INTO voice_templates (user_id, user_name, template_sequence) VALUES (@id, @name, @template)";
-                    string checkQuery = "SELECT COUNT(*) FROM voice_enrollment_final WHERE user_name = @Username";
-                    string insertUserQuery = @"
-                    INSERT INTO voice_enrollment_final (user_name) 
-                    VALUES (@Username); 
-                    SELECT SCOPE_IDENTITY();";
-
-                    // Check if user exists
-                    using (SqlCommand checkCmd = new SqlCommand(checkQuery, conn))
+                    using (var checkCmd = new SqlCommand("SELECT COUNT(*) FROM voice_enrollment_final WHERE user_name = @Username", conn))
                     {
                         checkCmd.Parameters.AddWithValue("@Username", user.UserName);
                         int existingCount = (int)checkCmd.ExecuteScalar();
 
                         if (existingCount <= 0)
                         {
-                            using (SqlCommand cmd = new SqlCommand(insertUserQuery, conn))
+                            using (var insertCmd = new SqlCommand("INSERT INTO voice_enrollment_final (user_name) VALUES (@Username); SELECT SCOPE_IDENTITY();", conn))
                             {
-                                cmd.Parameters.AddWithValue("@Username", user.UserName);
-                                object resultId = cmd.ExecuteScalar();
-                                currId = Convert.ToInt32(resultId);
+                                insertCmd.Parameters.AddWithValue("@Username", user.UserName);
+                                object resultId = insertCmd.ExecuteScalar();
+                                userId = Convert.ToInt32(resultId);
                             }
                         }
                         else
                         {
-                            // If user exists, get their ID
-                            using (SqlCommand getIdCmd = new SqlCommand("SELECT TOP 1 user_id FROM voice_templates WHERE user_name = @Username ORDER BY user_id DESC", conn))
+                            using (var getIdCmd = new SqlCommand("SELECT TOP 1 user_id FROM voice_templates WHERE user_name = @Username ORDER BY user_id DESC", conn))
                             {
                                 getIdCmd.Parameters.AddWithValue("@Username", user.UserName);
                                 object resultId = getIdCmd.ExecuteScalar();
-                                currId = resultId != null ? Convert.ToInt32(resultId) : 0;
+                                userId = resultId != null ? Convert.ToInt32(resultId) : 0;
                             }
                         }
                     }
 
-                    foreach (var template in user.UserTemplates)
+                    userIdMap[user.UserName] = userId;
+                }
+
+                conn.Close();
+            }
+
+            // STEP 2: Process Templates and Fill DataTable
+            Parallel.ForEach(hobba, new ParallelOptions { MaxDegreeOfParallelism = 4 }, user =>
+            {
+                if (!userIdMap.TryGetValue(user.UserName, out int currId))
+                    return;
+
+                foreach (var template in user.UserTemplates)
+                {
+                    var seq = AudioOperations.ExtractFeatures(template);
+                    double[][] features = new double[seq.Frames.Length][];
+
+                    for (int j = 0; j < seq.Frames.Length; j++)
                     {
-                        var seq = AudioOperations.ExtractFeatures(template);
-                        double[][] features = new double[seq.Frames.Length][];
-
-                        for (int j = 0; j < seq.Frames.Length; j++)
-                        {
-                            features[j] = seq.Frames[j].Features;
-                        }
-
-                        List<string> frameStrings = new List<string>(features.Length);
-                        for (int x = 0; x < features.Length; x++)
-                        {
-                            frameStrings.Add(string.Join(",", features[x]));
-                        }
-
-                        string templateString = string.Join(";", frameStrings) + ";";
-
-                        using (var insertCmd = new SqlCommand(insertSql, conn))
-                        {
-                            insertCmd.Parameters.AddWithValue("@id", currId);
-                            insertCmd.Parameters.AddWithValue("@name", user.UserName);
-                            var param = insertCmd.Parameters.Add("@template", SqlDbType.NVarChar, -1);
-                            param.Value = templateString;
-                            insertCmd.ExecuteNonQuery();
-                        }
+                        features[j] = seq.Frames[j].Features;
                     }
 
-                    conn.Close();
+                    List<string> frameStrings = new List<string>(features.Length);
+                    for (int x = 0; x < features.Length; x++)
+                    {
+                        frameStrings.Add(string.Join(",", features[x]));
+                    }
+
+                    string templateString = string.Join(";", frameStrings) + ";";
+
+                    lock (templateTable) // DataTable is not thread-safe
+                    {
+                        templateTable.Rows.Add(currId, user.UserName, templateString);
+                    }
                 }
             });
+
+            // STEP 3: Bulk Insert into voice_templates
+            using (var conn = new SqlConnection(connectionString))
+            {
+                conn.Open();
+                using (var bulkCopy = new SqlBulkCopy(conn))
+                {
+                    bulkCopy.DestinationTableName = "voice_templates";
+
+                    bulkCopy.ColumnMappings.Add("user_id", "user_id");
+                    bulkCopy.ColumnMappings.Add("user_name", "user_name");
+                    bulkCopy.ColumnMappings.Add("template_sequence", "template_sequence");
+
+                    bulkCopy.WriteToServer(templateTable);
+                }
+                conn.Close();
+            }
             stopwatch.Stop();
-            Console.WriteLine("Completely Done Loading Training Data!");
-            Console.WriteLine("Elapsed Time in sec for loading training data: " + stopwatch.Elapsed.TotalSeconds + " s");
+            MessageBox.Show("Completely Done Loading Training Data!");
+            MessageBox.Show("Elapsed Time in sec for loading training data: " + stopwatch.Elapsed.TotalSeconds + " s");
             
            
         }

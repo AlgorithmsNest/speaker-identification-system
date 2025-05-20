@@ -87,29 +87,37 @@ namespace Recorder
 
             return prev[templateLen];
         }
-        public static string MatchingVoicesTimeSync(MFCCFrame[] input, Dictionary<string, MFCCFrame[]> templates)
+        public static (string Name, double Score) MatchingVoicesTimeSync(MFCCFrame[] input, Dictionary<string, List<MFCCFrame[]>> templates)
         {
+            string bestName = null;
+            double bestScore = double.PositiveInfinity;
 
-            // NOTE: 
-            // Dictionary<string, MFCCFrame[]> templates should be Dictionary<string, List<MFCCFrame[]>> templates
-            // you can modify it here and make loop for each user and loop for voice in each user
-            // , or in the class itself make it name and List<List<MFCCFrame[]>> templates but you will need to modify constructor and match function
-            // I commented it in Identification until you finish it 
-            // Don't forget to make return type of the function (String,double) if you need to
-            var matchers = templates
-                .Select(t => new TemplateMatcher(t.Key, t.Value))
-                .ToList();
-
-            foreach (var frame in input)
+            foreach (var user in templates)
             {
-                Parallel.ForEach(matchers, matcher =>
+                string userName = user.Key;
+                List<MFCCFrame[]> userTemplates = user.Value;
+
+                foreach (var template in userTemplates)
                 {
-                    matcher.match(frame);
-                });
+                    var matcher = new TemplateMatcher(userName, template);
+                    foreach (var frame in input)
+                    {
+                        matcher.match(frame);
+                    }
+
+                    double score = matcher.CurrentScore;
+                    if (score < bestScore)
+                    {
+                        bestScore = score;
+                        bestName = userName;
+                    }
+                }
             }
 
-            var best = matchers.OrderBy(m => m.CurrentScore).FirstOrDefault();
-            return best?.Name;
+            if (bestName == null)
+                return (null, double.PositiveInfinity);
+
+            return (bestName, bestScore);
         }
 
         // return type is pair but here named tuple , name of user of best mached voice with , min distance
