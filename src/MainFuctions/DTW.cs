@@ -170,7 +170,8 @@ namespace Recorder
             if (InputFramesNO == 0 || TemplateFramesNo == 0)
                 return INF;
 
-            int HalfWidth = Math.Max(Width / 2, Math.Abs(InputFramesNO - TemplateFramesNo));
+            int HalfWidth = Width / 2;
+            HalfWidth = Math.Max(HalfWidth, Math.Abs(InputFramesNO - TemplateFramesNo));
 
             // Initialize previous array InputFrame = 0
             int prevStart = 0;
@@ -197,9 +198,9 @@ namespace Recorder
 
                 for (int TemplateFrame = currStart; TemplateFrame <= currEnd; TemplateFrame++)
                 {
-                    double choice1 = INF;
-                    double choice2 = INF;
-                    double choice3 = INF;
+                    double choice1 = INF; //corresponding
+                    double choice2 = INF; //stretching
+                    double choice3 = INF; //shrinking
 
                     int currIndex = TemplateFrame - currStart; //so we are 0 ,1 ,2, ... as usual(mapping to right idx)
 
