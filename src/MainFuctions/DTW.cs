@@ -241,38 +241,24 @@ namespace Recorder
             var Curr = new Dictionary<int, double>(); // columns(template frames) of current row (input frames) >> cost
             var NextTemplateFrames = new HashSet<int>(); // valid columns(template frames) of next row (input frames) that we need to calculate its cost
 
-            double BestCost = INF;
-            for (int TempalteFrame = 0; TempalteFrame < TemplateFramesNo; TempalteFrame++)
-            {
-                Curr[TempalteFrame] = DTW.EuclideanDistance(input[0], template[TempalteFrame]);
-                BestCost = Math.Min(BestCost, Prev[TempalteFrame]);
-            }
-            double Threshold = BestCost + BeamWidth;
-            for (int TempalteFrame = 0; TempalteFrame < TemplateFramesNo; TempalteFrame++)
-            {
-                if (Curr[TempalteFrame] <= Threshold)
-                {
-                    int move2 = TempalteFrame + 1;
-                    int move3 = TempalteFrame + 2;
-                    NextTemplateFrames.Add(TempalteFrame); //i
-                    if (move2 < TemplateFramesNo)
-                    {
-                        NextTemplateFrames.Add(move2);
-                    }
-                    if (move3 < TemplateFramesNo)
-                    {
-                        NextTemplateFrames.Add(move3);
-                    }
-                    // we could use prev and delete if not , but I think it will take more complexity idk
-                    Prev.Add(TempalteFrame, Curr[TempalteFrame]); // only add which are less than or equal to threshold
-                }
 
+            Prev[0] = 0;
+           // NextTemplateFrames.Add(0);   /////  lw 1 based yeb2a m4 3ayznha bs elfkra e7na mb2a4 n-initilize el cuur b INF tany w tab3n hatb2a col-1 w han-return tempalteframesno-1
+            int move2 = 0 + 1;
+            int move3 = 0 + 2;
+            if (move2 < TemplateFramesNo)
+            {
+                NextTemplateFrames.Add(move2);
+            }
+            if (move3 < TemplateFramesNo)
+            {
+                NextTemplateFrames.Add(move3);
             }
 
-            for (int InputFrame = 1; InputFrame < InputFramesNO; InputFrame++)
+            for (int InputFrame = 1; InputFrame <= InputFramesNO; InputFrame++)
             {
                 Curr = new Dictionary<int, double>();
-                BestCost = INF;
+                double BestCost = INF;
                 foreach (var col in NextTemplateFrames)  //which templates i want to calc this time, (iterate through the columns that I'm sure they will have path from prev row)
                 {
                     double choice1 = INF; //corresponding
@@ -297,26 +283,26 @@ namespace Recorder
                         choice3 = Prev[col - 2]; // Shrinking
                     }
                     Curr[col] = Math.Min(choice1, Math.Min(choice2, choice3)) +
-                        DTW.EuclideanDistance(input[InputFrame], template[col]);
+                        DTW.EuclideanDistance(input[InputFrame-1], template[col-1]);  //-1 from col???
                     BestCost = Math.Min(BestCost, Curr[col]);
 
                 }
                 Prev = new Dictionary<int, double>();
                 NextTemplateFrames = new HashSet<int>(); //clear to reuse
 
-                Threshold = BestCost + BeamWidth;
+                double Threshold = BestCost + BeamWidth;
                 foreach (var col in Curr)  //Threshold
                 {
                     if (col.Value <= Threshold) // key index of column (Template frame) , Value is : Cumulative Cost (dp)
                     {
-                        int move2 = col.Key + 1;
-                        int move3 = col.Key + 2;
-                        NextTemplateFrames.Add(col.Key); //indx of column
-                        if (move2 < TemplateFramesNo)
+                         move2 = col.Key + 1;
+                         move3 = col.Key + 2;
+                        NextTemplateFrames.Add(col.Key); //index of column
+                        if (move2 <= TemplateFramesNo)
                         {
                             NextTemplateFrames.Add(move2);
                         }
-                        if (move3 < TemplateFramesNo)
+                        if (move3 <= TemplateFramesNo)
                         {
                             NextTemplateFrames.Add(move3);
                         }
@@ -325,9 +311,15 @@ namespace Recorder
 
                 }
             }
-            if (Prev.ContainsKey(TemplateFramesNo - 1))
+           /* Console.WriteLine("TEmp" + template.Length);
+            foreach (var col in Prev)
             {
-                return Prev[TemplateFramesNo - 1];
+                Console.WriteLine(col.Key+"   "+col.Value );
+            }*/
+
+            if (Prev.ContainsKey(TemplateFramesNo)) 
+            {
+                return Prev[TemplateFramesNo];
             }
             else
                 return INF;
