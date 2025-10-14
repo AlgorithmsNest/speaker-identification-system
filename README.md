@@ -22,5 +22,10 @@ In this phase, we aim to identify an unknown user. The process begins by buildin
 To improve the matching process, we need to design a **sequence matching algorithm** that optimizes the search. This will include techniques like **pruning to limit the search paths and control the path cost (using methods such as beam search)**. Additionally, we may explore **time synchronization search** to enhance accuracy and efficiency during the matching process.
 
 
-## Before Contributing 
-Please ensure that you read and follow the guidelines outlined in the [CONTRIBUTING.md](CONTRIBUTING.md) before submitting any contributions.
+## Contributors
+- [Sama Khaled Ibrahim](https://github.com/SamaElkisarly)
+- [Nermine Araby Kamel](https://github.com/NrmeenAraby)
+- [Omnia Salah Mahmoud](https://github.com/Matata2020)
+- [Mahmoud Mohamed Hussein](https://github.com/mahmouddmohammed)
+- [Nayera Ahmed Shafik](https://github.com/Nayeraneru)
+- [Youssef Mohsen Reda](https://github.com/Youssef-Mohsen)
